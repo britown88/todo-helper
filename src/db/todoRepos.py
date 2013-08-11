@@ -3,9 +3,9 @@ import datetime
 
 
 class Repo:
-    def __init__(self, user, repo):
-        self.userName = user
-        self.repoName = repo
+    def __init__(self):
+        self.userName = ''
+        self.repoName = ''
         self.status = "Tagged"
         self.TODOs = []
         self.tagDate = datetime.datetime.now().strftime("%m/%d/%Y %H:%M:%S")
@@ -28,10 +28,13 @@ class Repo:
             td.save(self)
         
     def load(self):
+        self.loadFromKey(self.key())
+        
+
+    def loadFromKey(self, key):
         members = [attr for attr in dir(self) if not callable(getattr(self, attr)) and \
                                                  not attr.startswith("__") and \
                                                  not attr == "TODOs"]
-        key = self.key()
         r = todoRedis.connect()
 
         if r.hlen(key) > 0:
@@ -42,6 +45,7 @@ class Repo:
             td = TODO()
             td.loadFromKey(m)
             self.TODOs.append(td)
+
 
 
 class TODO:
@@ -84,9 +88,28 @@ def repoCount():
 
 def addNewRepo(user, repoName):
     r = todoRedis.connect()
-    repo = Repo(user, repoName)
+    repo = Repo()
+    repo.userName = user
+    repo.repoName= repoName
+    
     repo.save()
     
     return repo
+    
+def repoExists(userName, repoName):
+    r = todoRedis.connect()
+    return r.sismember('repos', 'repos::%s/%s'%(userName, repoName))
+
+def getRepos():
+    r = todoRedis.connect()
+    repoList = []
+    
+    for key in r.smembers('repos'):
+        repo = Repo()
+        repo.loadFromKey(key)
+        repoList.append(repo)
+        
+    return repoList
+    
 
 
