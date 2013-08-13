@@ -20,7 +20,7 @@ def buildComplaintTemplatesList():
     
     templates.append('This has been sitting here since {{ BlameDate }}...a little unprofessional don\'t you think?')
     templates.append('I don\'t get it, {{ BlameFirstName }} added this {{ BlameDatePhrase }} ago!')
-    templates.append('Why was @{{ BlameUsername }} allowed to leave this here?')
+    templates.append('Why was @{{ BlameUserName }} allowed to leave this here?')
     templates.append('We\'ve had no traction on this since {{ BlameDate}}.')
     templates.append('I thought {{ FileName }} was in @{{ BlameUserName }}\'s hands?')
     templates.append('It\'s been {{ BlameDatePhrase }}.')
@@ -72,7 +72,7 @@ def buildUserFormalName(username):
         #User wasnt found for some reason
         pass
     
-    return user.name if user else ''
+    return user.name if user else 'this user'
     
 #Builds a string describing the passed date relative to the current date 
 #in a human-readable phrase
