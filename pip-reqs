@@ -1,3 +1,4 @@
+Pygments==1.6
 argparse==1.2.1
 pygithub3==0.5
 redis==2.7.6
