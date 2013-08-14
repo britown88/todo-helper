@@ -3,6 +3,7 @@ import os
 from pygments import highlight
 from pygments.lexers import PythonLexer
 from pygments.formatter import Formatter
+from pygments.token import Comment
 
 ## custom formatter
 
@@ -12,9 +13,15 @@ PROJECT_PATH = os.path.abspath(os.path.dirname(__file__))
 
 class NullFormatter(Formatter):
     def format(self, tokensource, outfile):
+        comments = []
         for ttype, value in tokensource:
-            print ttype, value
-            outfile.write(value)
+            if ttype is Comment:
+                print ttype, value
+                if 'todo' in value.lower():
+                    comments.append({
+                        'value': value
+                        })
+        outfile.write(comments)
 
 def parse(codeInput):
     return highlight(codeInput, PythonLexer(), NullFormatter())
