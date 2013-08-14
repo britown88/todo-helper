@@ -45,13 +45,13 @@ def findRepos(gh, count):
 def tagNewRepos(gh, count):         
             
     #find random shiny new repo that allows issues and hasnt been tagged before
-    chosenRepo = findRepos(gh, count)
+    repoList = findRepos(gh, count)
     
-    #Add repo to Redis
-    redisRepo = addNewRepo(chosenRepo.owner.login, chosenRepo.name)
-    
-    
-    call(['git', 'clone', chosenRepo.git_url, 'repos/%s' % (redisRepo.key())])
+    for repo in repoList:    
+        #Add repo to Redis
+        redisRepo = addNewRepo(repo.owner.login, repo.name)        
+        
+        call(['git', 'clone', repo.git_url, 'repos/%s' % (redisRepo.key())])
             
     
               
