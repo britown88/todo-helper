@@ -1,3 +1,4 @@
+import json
 import os
 
 from pygments import highlight
@@ -9,44 +10,66 @@ from pygments.token import Comment
 
 PROJECT_PATH = os.path.abspath(os.path.dirname(__file__))
 
-## custom formatter
+## custom comment- and todo- finder formatter
 class NullFormatter(Formatter):
     def format(self, tokensource, outfile):
-        # first pass to group single-line comments together?
-
-
-        # second pass to look for todos.
+        # look for todos.
         comments = []
-        tokenTypeHistory = []
         for ttype, value in tokensource:
-            tokenTypeHistory.append(ttype)
-            if ttype is Comment:
-                print {
-                    'ttype': ttype, 
-                    'value': value,
-                    }
+            if ttype.__str__() == Comment.__str__() or ttype.parent.__str__() == Comment.__str__():
+                # print {
+                #     'ttype': ttype, 
+                #     'value': value,
+                #     }
+                # print "FOUND A COMMENT ++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++kawaii"
                 if 'todo' in value.lower():
                     comments.append({
                         'value': value,
                         })
-        outfile.write(comments)
+
+        # This feels so fucking derpy but the Formatter doesn't let me pass 
+        #   out python objects. JSON ftw.
+        outfile.write(json.dumps(comments))
 
 # function to run formatter and capture output
-def parse(codeInput):
-    return highlight(codeInput, PythonLexer(), NullFormatter())
+def parse(filename, codeInput):
+    print "---------- %s" % filename
+    lexer = guess_lexer_for_filename(filename, codeInput)
+    # lexer = guess_lexer(codeInput)
+    print lexer.name
+    # print dir(lexer)
+    # print codeInput
+    if lexer.name == 'C#':
+        print "found c#"
+        return highlight(
+            codeInput, 
+            lexer, 
+            NullFormatter())
+    else:
+        return json.dumps([])
 
 def walk(dir):
+    todos = []
     for dirname, dirnames, filenames in os.walk(dir):
         # print path to all subdirectories first.
         for subdirname in dirnames:
-            print os.path.join(dirname, subdirname)
+            pass
+            # print os.path.join(dirname, subdirname)
 
         # print path to all filenames.
         for filename in filenames:
-            print os.path.join(dirname, filename)
+            # print os.path.join(dirname, filename)
             fin = open(os.path.join(dirname, filename))
             code = fin.read()
-            print parse(code)
+            parsed = parse(filename, code)
+            parsed = json.loads(parsed)
+            for p in parsed:
+                p['filename'] = filename
+            if len(parsed) > 0:
+                print type(parsed)
+                print type(todos)
+                todos = todos + parsed
+                print todos
 
         # Advanced usage:
         # editing the 'dirnames' list will stop os.walk() from recursing into there.
@@ -54,11 +77,7 @@ def walk(dir):
             # don't go into any .git directories.
             dirnames.remove('.git')
 
-
-
-## TODO
-## function to traverse file directories and parse and to identify file types
-
+    return todos
 
 if __name__ == '__main__':
     testDir = os.path.join(
@@ -66,23 +85,7 @@ if __name__ == '__main__':
         '..',
         'test',
         'fixtures')
-    walk(testDir)
-
-    # for fin in os.listdir(testDir):
-    #     pass
-
-
-    fin = open(os.path.join(
-        PROJECT_PATH,
-        '..',
-        'test',
-        'fixtures',
-        'target.py'))
-    code = fin.read()
-    # code = 'print "Hello World"'
-    print parse(code)
-
-    # run it on `/test/fixtures/target.py`
+    print walk(testDir)
 
     # For good fun, try:
     # src $ python findTodo.py 
