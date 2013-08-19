@@ -1,5 +1,6 @@
+from datetime import datetime
+
 import todoRedis
-import datetime
 
 
 class Repo:
@@ -7,16 +8,16 @@ class Repo:
         self.userName = ''
         self.repoName = ''
         self.status = "Tagged"
-        self.TODOs = []
-        self.tagDate = datetime.datetime.now().strftime("%m/%d/%Y %H:%M:%S")
+        self.Todos = []
+        self.tagDate = datetime.now().strftime("%m/%d/%Y %H:%M:%S")
 
     def key(self):
-        return 'repos::%s/%s'%(self.userName, self.repoName)
+        return 'repos::%s/%s' % (self.userName, self.repoName)
     
     def save(self):
-        members = [attr for attr in dir(self) if not callable(getattr(self, attr)) and \
-                                                 not attr.startswith("__") and \
-                                                 not attr == "TODOs"]
+        members = [attr for attr in dir(self) if not callable(getattr(self, attr)) and
+                                                 not attr.startswith("__") and
+                                                 not attr == "Todos"]
         r = todoRedis.connect()
         
         r.sadd('repos', self.key())
@@ -24,7 +25,7 @@ class Repo:
         for m in members:
             r.hset(self.key(), m, getattr(self, m))
 
-        for td in self.TODOs:
+        for td in self.Todos:
             td.save(self)
         
     def load(self):
@@ -32,23 +33,23 @@ class Repo:
         
 
     def loadFromKey(self, key):
-        members = [attr for attr in dir(self) if not callable(getattr(self, attr)) and \
-                                                 not attr.startswith("__") and \
-                                                 not attr == "TODOs"]
+        members = [attr for attr in dir(self) if not callable(getattr(self, attr)) and
+                                                 not attr.startswith("__") and
+                                                 not attr == "Todos"]
         r = todoRedis.connect()
 
         if r.hlen(key) > 0:
             for m in members:
                 setattr(self, m, r.hget(key, m))
 
-        for m in r.smembers(key+"::TODO"):
-            td = TODO()
+        for m in r.smembers(key+"::todo"):
+            td = Todo()
             td.loadFromKey(m)
-            self.TODOs.append(td)
+            self.Todos.append(td)
 
 
 
-class TODO:
+class Todo:
     def __init__(self):
         self.filePath = ''
         self.lineNumber = ''
@@ -57,8 +58,8 @@ class TODO:
         blameDate = ''
 
     def save(self, parent):
-        key = '%s::TODO::%s/%i'%(parent.key(), self.filePath.rsplit('/',1)[1], self.lineNumber)
-        listKey = '%s::TODO'%(parent.key())
+        key = '%s::todo::%s/%i' % (parent.key(), self.filePath.rsplit('/',1)[1], self.lineNumber)
+        listKey = '%s::todo' % (parent.key())
         members = [attr for attr in dir(self) if not callable(getattr(self, attr)) and not attr.startswith("__")]
 
         r = todoRedis.connect()
@@ -69,7 +70,7 @@ class TODO:
 
     
     def load(self, parent):
-        key = '%s::TODO::%s/%i'%(parent.key(), self.filePath.rsplit('/',1)[1], self.lineNumber)
+        key = '%s::todo::%s/%i' % (parent.key(), self.filePath.rsplit('/',1)[1], self.lineNumber)
         self.loadFromKey(key)
         
     def loadFromKey(self, key):
@@ -98,7 +99,7 @@ def addNewRepo(user, repoName):
     
 def repoExists(userName, repoName):
     r = todoRedis.connect()
-    return r.sismember('repos', 'repos::%s/%s'%(userName, repoName))
+    return r.sismember('repos', 'repos::%s/%s' % (userName, repoName))
 
 def getRepos():
     r = todoRedis.connect()

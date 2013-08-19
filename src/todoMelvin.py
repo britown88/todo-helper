@@ -1,9 +1,10 @@
-from pygithub3 import Github
-from db.todoRedis import connect
-import db.todoRepos
-
 import random
 from subprocess import call
+
+from pygithub3 import Github
+
+from db.todoRedis import connect
+import db.todoRepos
 
 def tagNewRepo(username, password):
     gh = Github(login=username, password=password)
@@ -12,14 +13,14 @@ def tagNewRepo(username, password):
     repoList = []
     
     for event in gh.events.list().iterator():
-        if(event.type == 'PushEvent'):
+        if event.type == 'PushEvent':
             repoList.append(event.repo)
             
     chosenRepo = None
     username = ''
     reponame = ''
     
-    while(not chosenRepo):
+    while not chosenRepo:
         repo = repoList[random.randint(0, len(repoList) - 1)]
         username = repo.name.split('/')[0]
         reponame = repo.name.split('/')[1]
