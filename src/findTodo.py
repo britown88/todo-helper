@@ -5,26 +5,38 @@ from pygments.lexers import PythonLexer
 from pygments.formatter import Formatter
 from pygments.token import Comment
 
-## custom formatter
 
 PROJECT_PATH = os.path.abspath(os.path.dirname(__file__))
 
-# function to run formatter and capture output
-
+## custom formatter
 class NullFormatter(Formatter):
     def format(self, tokensource, outfile):
+        # first pass to group single-line comments together?
+
+
+        # second pass to look for todos.
         comments = []
+        tokenTypeHistory = []
         for ttype, value in tokensource:
+            tokenTypeHistory.append(ttype)
             if ttype is Comment:
-                print ttype, value
+                print {
+                    'ttype': ttype, 
+                    'value': value,
+                    }
                 if 'todo' in value.lower():
                     comments.append({
-                        'value': value
+                        'value': value,
                         })
         outfile.write(comments)
 
+# function to run formatter and capture output
 def parse(codeInput):
     return highlight(codeInput, PythonLexer(), NullFormatter())
+
+
+## TODO
+## function to traverse file directories and parse and to identify file types
 
 
 if __name__ == '__main__':
