@@ -6,6 +6,7 @@ from pygithub3 import Github
 from db.todoRedis import connect
 from db.todoRepos import repoExists, addNewRepo
 
+MAX_SIZE = 10240
 
 def checkForValidEvent(gh, event):    
     if event.type == 'PushEvent':
@@ -16,7 +17,7 @@ def checkForValidEvent(gh, event):
         if not repoExists(username, reponame):
             try:
                 chosenRepo = gh.repos.get(username, reponame)
-                if chosenRepo.has_issues:
+                if chosenRepo.has_issues and chosenRepo.size <= MAX_SIZE:
                     return chosenRepo
             except:
                 pass
