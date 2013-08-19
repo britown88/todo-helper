@@ -4,19 +4,34 @@ from pygments import highlight
 from pygments.lexers import PythonLexer 
 from pygments.lexers import guess_lexer, guess_lexer_for_filename
 from pygments.formatter import Formatter
+from pygments.token import Comment
 
-## custom formatter
 
 PROJECT_PATH = os.path.abspath(os.path.dirname(__file__))
 
-# function to run formatter and capture output
-
+## custom formatter
 class NullFormatter(Formatter):
     def format(self, tokensource, outfile):
-        for ttype, value in tokensource:
-            print ttype, value
-            outfile.write(value)
+        # first pass to group single-line comments together?
 
+
+        # second pass to look for todos.
+        comments = []
+        tokenTypeHistory = []
+        for ttype, value in tokensource:
+            tokenTypeHistory.append(ttype)
+            if ttype is Comment:
+                print {
+                    'ttype': ttype, 
+                    'value': value,
+                    }
+                if 'todo' in value.lower():
+                    comments.append({
+                        'value': value,
+                        })
+        outfile.write(comments)
+
+# function to run formatter and capture output
 def parse(codeInput):
     return highlight(codeInput, PythonLexer(), NullFormatter())
 
@@ -39,6 +54,10 @@ def walk(dir):
             # don't go into any .git directories.
             dirnames.remove('.git')
 
+
+
+## TODO
+## function to traverse file directories and parse and to identify file types
 
 
 if __name__ == '__main__':
