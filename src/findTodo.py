@@ -12,20 +12,35 @@ PROJECT_PATH = os.path.abspath(os.path.dirname(__file__))
 
 ## custom comment- and todo- finder formatter
 class NullFormatter(Formatter):
+    # generator to find substrings
+    def find_all(self, a_str, sub):
+        start = 0
+        while True:
+            start = a_str.find(sub, start)
+            if start == -1: return
+            yield start
+            start += len(sub)
+
+    # number of instances of a substring.
+    def instances(self, a_str, sub):
+        instances = 0
+        for f in self.find_all(a_str, sub):
+            instances += 1
+        return instances
+
+    # format() is the required function in a Formatter
     def format(self, tokensource, outfile):
+        linenumber = 1
         # look for todos.
         comments = []
         for ttype, value in tokensource:
             if ttype.__str__() == Comment.__str__() or ttype.parent.__str__() == Comment.__str__():
-                # print {
-                #     'ttype': ttype, 
-                #     'value': value,
-                #     }
-                # print "FOUND A COMMENT ++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++kawaii"
                 if 'todo' in value.lower():
                     comments.append({
                         'value': value,
+                        'linenumber': linenumber,
                         })
+            linenumber += self.instances(value, '\n')
 
         # This feels so fucking derpy but the Formatter doesn't let me pass 
         #   out python objects. JSON ftw.
@@ -33,43 +48,26 @@ class NullFormatter(Formatter):
 
 # function to run formatter and capture output
 def parse(filename, codeInput):
-    print "---------- %s" % filename
     lexer = guess_lexer_for_filename(filename, codeInput)
-    # lexer = guess_lexer(codeInput)
-    print lexer.name
-    # print dir(lexer)
-    # print codeInput
-    if lexer.name == 'C#':
-        print "found c#"
-        return highlight(
-            codeInput, 
-            lexer, 
-            NullFormatter())
-    else:
-        return json.dumps([])
+    print "---------- %s -- %s" % (filename, lexer.name)
+    return highlight(
+        codeInput, 
+        lexer, 
+        NullFormatter())
 
-def walk(dir):
+def walk(testDir):
     todos = []
-    for dirname, dirnames, filenames in os.walk(dir):
-        # print path to all subdirectories first.
-        for subdirname in dirnames:
-            pass
-            # print os.path.join(dirname, subdirname)
-
-        # print path to all filenames.
+    testDirLen = len(testDir)
+    for dirname, dirnames, filenames in os.walk(testDir):
         for filename in filenames:
-            # print os.path.join(dirname, filename)
             fin = open(os.path.join(dirname, filename))
             code = fin.read()
             parsed = parse(filename, code)
             parsed = json.loads(parsed)
             for p in parsed:
-                p['filename'] = filename
+                p['filename'] = os.path.join(dirname, filename)[testDirLen:]
             if len(parsed) > 0:
-                print type(parsed)
-                print type(todos)
                 todos = todos + parsed
-                print todos
 
         # Advanced usage:
         # editing the 'dirnames' list will stop os.walk() from recursing into there.
