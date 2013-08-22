@@ -7,7 +7,7 @@ from pygithub3 import Github
 from db.todoRepos import Todo
 
 titleTemplate = 'Unresolved TODO in {{ FileName }}:{{ LineNumber }}'
-issueHeaderTemplate = 'File: {{ FilePath }}\nLine: {{ LineNumber }}\n\n\'\'\'\n{{ CommentBlock }}\n\'\'\''
+issueHeaderTemplate = 'File: {{ FilePath }}\nLine: {{ LineNumber }}\n\n```\n{{ CommentBlock }}\n```'
 
 #Builds a template and renders it with the passed-in data
 def renderTemplate(tempString, data):
