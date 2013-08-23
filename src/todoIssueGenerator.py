@@ -1,8 +1,9 @@
 import random
-import time
+from datetime import datetime
 
 from jinja2 import Template
 from pygithub3 import Github
+from dateutil.relativedelta import relativedelta
 
 from db.todoRepos import Todo
 
@@ -19,11 +20,11 @@ def buildComplaintTemplatesList():
     templates = []
     
     templates.append('This has been sitting here since {{ BlameDate }}...a little unprofessional don\'t you think?')
-    templates.append('I don\'t get it, {{ BlameFirstName }} added this {{ BlameDatePhrase }} ago!')
+    templates.append('I don\'t get it, {{ BlameFirstName }} added this {{ TimeSinceBlameDate }} ago!')
     templates.append('Why was @{{ BlameUserName }} allowed to leave this here?')
     templates.append('We\'ve had no traction on this since {{ BlameDate}}.')
     templates.append('I thought {{ FileName }} was in @{{ BlameUserName }}\'s hands?')
-    templates.append('It\'s been {{ BlameDatePhrase }}.')
+    templates.append('It\'s been {{ TimeSinceBlameDate }}.')
     
     return templates
     
@@ -52,7 +53,7 @@ def buildTemplateData(todo):
     data['BlameUserName'] = todo.blameUser
     data['BlameFirstName'] = userFormalName.split(' ')[0]
     data['BlameDate'] = todo.blameDate
-    data['BlameDatePhrase'] = buildDatePhrase(todo.blameDate)
+    data['TimeSinceBlameDate'] = buildDatePhrase(todo.blameDate)
     data['FileName'] = todo.filePath.rsplit('/', 1)[1].split('.')[0]
     data['FilePath'] = todo.filePath
     data['LineNumber'] = todo.lineNumber
@@ -76,52 +77,41 @@ def buildUserFormalName(username):
     
 #Builds a string describing the passed date relative to the current date 
 #in a human-readable phrase
-#Passed in data shoud be in 'yyyy-mm-dd' and be GMT
+#Passed in data shoud be in 'yyyy-mm-dd HH::MM:SS' and be UTC
 def buildDatePhrase(dateString):
-    date = time.strptime(dateString, '%Y-%m-%d')
-    currDate = time.gmtime()
-    
-    elapsedSeconds = time.mktime(currDate) - time.mktime(date)
-    elapsedHours = (elapsedSeconds / 60) / 60
-    elapsedDays = elapsedHours / 24
-    elapsedWeeks = elapsedDays / 7.019
-    elapsedMonths = elapsedDays / 30.41
-    elapsedYears = elapsedDays / 365
-    
-    if elapsedYears > 2:
-        return 'over %i years' % (elapsedYears)
-    
-    if elapsedYears > 1:
-        return 'over a year'
-        
-    if elapsedMonths > 10:
-        return 'almost a year'
-        
-    if elapsedMonths > 2:
-        return 'over %i months' % (elapsedMonths)
-        
-    if elapsedMonths > 1:
-        return 'over a month'
-        
-    if elapsedWeeks > 3:
-        return 'almost a month'
-        
-    if elapsedWeeks > 2:
-        return 'over %i weeks' % (elapsedWeeks)
-        
-    if elapsedWeeks > 1:
-        return 'over a week'        
-        
-    if elapsedDays > 5:
-        return 'almost a week'
-        
-    if elapsedDays > 2:
-        return '%i days' % (elapsedDays)
-        
-    if elapsedDays > 1:
-        return 'a long day'        
+    date = datetime.strptime(dateString, '%Y-%m-%d %H:%M:%S')
+    currDate = datetime.utcnow()
 
-    return 'crucial hours'
+    #Gives a helpful elapsed date/time structure
+    delta = relativedelta(currDate, date)
+
+    #Need to do weeks manually though
+    delta.weeks = delta.days / 7
+    delta.days -= delta.weeks * 7
+
+    conditions = []
+
+    #We'll construct a list of dictionaries that contain lambdas for determining the condition and building the string
+    conditions.append({'func':(lambda d: d.years >= 2), 'result':(lambda d: 'over %i years' % (d.years))})
+    conditions.append({'func':(lambda d: d.years == 1), 'result':(lambda d: 'over a year')})
+    conditions.append({'func':(lambda d: d.months >= 10), 'result':(lambda d: 'almost a year')})
+    conditions.append({'func':(lambda d: d.months >= 2), 'result':(lambda d: 'over %i months' % (d.months))})
+    conditions.append({'func':(lambda d: d.months == 1), 'result':(lambda d: 'over a month')})
+    conditions.append({'func':(lambda d: d.weeks >= 3), 'result':(lambda d: 'almost a month')})
+    conditions.append({'func':(lambda d: d.weeks >= 2), 'result':(lambda d: 'over %i weeks' % (d.weeks))})
+    conditions.append({'func':(lambda d: d.weeks == 1), 'result':(lambda d: 'over a week')})
+    conditions.append({'func':(lambda d: d.days >= 5), 'result':(lambda d: 'almost a week')})
+    conditions.append({'func':(lambda d: d.days >= 2), 'result':(lambda d: '%i days' % (d.days))})
+    conditions.append({'func':(lambda d: d.days == 1), 'result':(lambda d: 'over 24 hours')})
+    conditions.append({'func':(lambda d: d.hours >= 1), 'result':(lambda d: 'crucial hours')})
+    conditions.append({'func':(lambda d: True), 'result':(lambda d: 'mere moments')})
+
+    for c in conditions:
+        if c['func'](delta):
+            return c['result'](delta)        
+
+    #This is unreachable
+    return ''
     
 #Compiles the different parts of the issue's body and returns the final string
 #Takes the data dictionary to render the templates with
