@@ -76,8 +76,6 @@ def buildDatePhrase(dateString):
     delta.weeks = delta.days / 7
     delta.days -= delta.weeks * 7
 
-    conditions = []
-
     # List of dictionaries that contain lambdas for determining the condition 
     # and building the string
     conditions = [
