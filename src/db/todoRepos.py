@@ -54,8 +54,9 @@ class Todo:
         self.filePath = ''
         self.lineNumber = ''
         self.commmentBlock = ''
-        blameUser = ''
-        blameDate = ''
+        self.blameUser = ''
+        self.blameDate = ''
+        self.blameUserFormalName = ''
 
     def save(self, parent):
         key = '%s::todo::%s/%i' % (parent.key(), self.filePath.rsplit('/',1)[1], self.lineNumber)
