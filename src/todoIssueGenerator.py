@@ -78,20 +78,23 @@ def buildDatePhrase(dateString):
 
     conditions = []
 
-    # We'll construct a list of dictionaries that contain lambdas for determining the condition and building the string
-    conditions.append({'func':(lambda d: d.years >= 2), 'result':(lambda d: 'over %i years' % (d.years))})
-    conditions.append({'func':(lambda d: d.years == 1), 'result':(lambda d: 'over a year')})
-    conditions.append({'func':(lambda d: d.months >= 10), 'result':(lambda d: 'almost a year')})
-    conditions.append({'func':(lambda d: d.months >= 2), 'result':(lambda d: 'over %i months' % (d.months))})
-    conditions.append({'func':(lambda d: d.months == 1), 'result':(lambda d: 'over a month')})
-    conditions.append({'func':(lambda d: d.weeks >= 3), 'result':(lambda d: 'almost a month')})
-    conditions.append({'func':(lambda d: d.weeks >= 2), 'result':(lambda d: 'over %i weeks' % (d.weeks))})
-    conditions.append({'func':(lambda d: d.weeks == 1), 'result':(lambda d: 'over a week')})
-    conditions.append({'func':(lambda d: d.days >= 5), 'result':(lambda d: 'almost a week')})
-    conditions.append({'func':(lambda d: d.days >= 2), 'result':(lambda d: '%i days' % (d.days))})
-    conditions.append({'func':(lambda d: d.days == 1), 'result':(lambda d: 'over 24 hours')})
-    conditions.append({'func':(lambda d: d.hours >= 1), 'result':(lambda d: 'crucial hours')})
-    conditions.append({'func':(lambda d: True), 'result':(lambda d: 'mere moments')})
+    # List of dictionaries that contain lambdas for determining the condition 
+    # and building the string
+    conditions = [
+        {'func':(lambda d: d.years >= 2), 'result':(lambda d: 'over %i years' % (d.years))},
+        {'func':(lambda d: d.years == 1), 'result':(lambda d: 'over a year')},
+        {'func':(lambda d: d.months >= 10), 'result':(lambda d: 'almost a year')},
+        {'func':(lambda d: d.months >= 2), 'result':(lambda d: 'over %i months' % (d.months))},
+        {'func':(lambda d: d.months == 1), 'result':(lambda d: 'over a month')},
+        {'func':(lambda d: d.weeks >= 3), 'result':(lambda d: 'almost a month')},
+        {'func':(lambda d: d.weeks >= 2), 'result':(lambda d: 'over %i weeks' % (d.weeks))},
+        {'func':(lambda d: d.weeks == 1), 'result':(lambda d: 'over a week')},
+        {'func':(lambda d: d.days >= 5), 'result':(lambda d: 'almost a week')},
+        {'func':(lambda d: d.days >= 2), 'result':(lambda d: '%i days' % (d.days))},
+        {'func':(lambda d: d.days == 1), 'result':(lambda d: 'over 24 hours')},
+        {'func':(lambda d: d.hours >= 1), 'result':(lambda d: 'crucial hours')},
+        {'func':(lambda d: True), 'result':(lambda d: 'mere moments')}
+    ]
 
     for c in conditions:
         if c['func'](delta):
