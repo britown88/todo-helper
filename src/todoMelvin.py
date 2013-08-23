@@ -17,7 +17,8 @@ def checkForValidEvent(gh, event):
         if not repoExists(username, reponame):
             try:
                 chosenRepo = gh.repos.get(username, reponame)
-                if chosenRepo.has_issues and chosenRepo.size <= MAX_SIZE:
+                if chosenRepo.has_issues and not chosenRepo.fork \
+                    and chosenRepo.size <= MAX_SIZE:
                     return chosenRepo
             except:
                 pass
@@ -32,7 +33,7 @@ def findRepos(gh, count):
     for event in gh.events.list().iterator():
         repo = checkForValidEvent(gh, event)
         
-        if repo:
+        if repo and repo not in repoList:
             repoList.append(repo)
             if len(repoList) == count: return repoList
             
