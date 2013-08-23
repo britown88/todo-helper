@@ -10,12 +10,12 @@ from db.todoRepos import Todo
 titleTemplate = 'Unresolved TODO in {{ FileName }}:{{ LineNumber }}'
 issueHeaderTemplate = 'File: {{ FilePath }}\nLine: {{ LineNumber }}\n\n```\n{{ CommentBlock }}\n```'
 
-#Builds a template and renders it with the passed-in data
+# Builds a template and renders it with the passed-in data
 def renderTemplate(tempString, data):
     return Template.render(Template(tempString), data)
 
 
-#Returns a list of complain templates
+# Returns a list of complain templates
 def buildComplaintTemplatesList():
     templates = []
     
@@ -28,7 +28,7 @@ def buildComplaintTemplatesList():
     
     return templates
     
-#Returns a list of emphasis templates
+# Returns a list of emphasis templates
 def buildEmphasisTemplatesList():
     templates = []
     
@@ -37,21 +37,21 @@ def buildEmphasisTemplatesList():
     templates.append('I\'m confused as to why this is still a TODO...')
     templates.append('Couldn\'t you just go ahead and implement this?')
     templates.append('I find it pretty hilarious that this continues to go unresolved.')
-    templates.append('Will we be seeing resolution on this in this project\'s lifetime?')
+    templates.append('Will there be resolution on this in the project\'s lifetime?')
     templates.append('I think I speak for many when I say that the lack of update on this is non-trivially detrimental.')
     templates.append('How can we expect to have full-featured release when the code itself is fragmented and incomplete?')
     
     return templates
 
-#Builds and returns the dictionary to popuate templates with
-#Takes a db.todoRepo.Todo()
+# Builds and returns the dictionary to popuate templates with
+# Takes a db.todoRepo.Todo()
 def buildTemplateData(todo):
     data = {}
     
     userFormalName = buildUserFormalName(todo.blameUser)
     
     data['BlameUserName'] = todo.blameUser
-    data['BlameFirstName'] = userFormalName.split(' ')[0]
+    data['BlameFirstName'] = todo.blameUserFormalName.split(' ')[0]
     data['BlameDate'] = todo.blameDate
     data['TimeSinceBlameDate'] = buildDatePhrase(todo.blameDate)
     data['FileName'] = todo.filePath.rsplit('/', 1)[1].split('.')[0]
@@ -61,37 +61,24 @@ def buildTemplateData(todo):
     
     return data
 
-#Grabs data on the entered username from Github and returns the user's full name
-#Returns an empty string if the user is not found
-def buildUserFormalName(username):
-    gh=Github()
-    user = None
     
-    try:
-        user = gh.users.get(username)
-    except:
-        #User wasnt found for some reason
-        pass
-    
-    return user.name if user else 'this user'
-    
-#Builds a string describing the passed date relative to the current date 
-#in a human-readable phrase
-#Passed in data shoud be in 'yyyy-mm-dd HH::MM:SS' and be UTC
+# Builds a string describing the passed date relative to the current date 
+# in a human-readable phrase
+# Passed in data shoud be in 'yyyy-mm-dd HH::MM:SS' and be UTC
 def buildDatePhrase(dateString):
     date = datetime.strptime(dateString, '%Y-%m-%d %H:%M:%S')
     currDate = datetime.utcnow()
 
-    #Gives a helpful elapsed date/time structure
+    # Gives a helpful elapsed date/time structure
     delta = relativedelta(currDate, date)
 
-    #Need to do weeks manually though
+    # Need to do weeks manually though
     delta.weeks = delta.days / 7
     delta.days -= delta.weeks * 7
 
     conditions = []
 
-    #We'll construct a list of dictionaries that contain lambdas for determining the condition and building the string
+    # We'll construct a list of dictionaries that contain lambdas for determining the condition and building the string
     conditions.append({'func':(lambda d: d.years >= 2), 'result':(lambda d: 'over %i years' % (d.years))})
     conditions.append({'func':(lambda d: d.years == 1), 'result':(lambda d: 'over a year')})
     conditions.append({'func':(lambda d: d.months >= 10), 'result':(lambda d: 'almost a year')})
@@ -110,11 +97,11 @@ def buildDatePhrase(dateString):
         if c['func'](delta):
             return c['result'](delta)        
 
-    #This is unreachable
+    # This is unreachable
     return ''
     
-#Compiles the different parts of the issue's body and returns the final string
-#Takes the data dictionary to render the templates with
+# Compiles the different parts of the issue's body and returns the final string
+# Takes the data dictionary to render the templates with
 def buildIssueBody(data):
     emphasisList = buildEmphasisTemplatesList()
     complaintList = buildComplaintTemplatesList()
@@ -129,17 +116,17 @@ def buildIssueBody(data):
     return '%s\n\n%s  %s' % (header, complaint, emphasis)
 
 
-#Builds an issue from the passed db.todoRepos.Todo
-#returns a dictionary containing title and body ready to pass to github
+# Builds an issue from the passed db.todoRepos.Todo
+# returns a dictionary containing title and body ready to pass to github
 def buildIssue(todo):
-    #Create Issues format
-    #repo.create(dict(title='My test issue', body='This needs to be fixed ASAP.'))
+    # Create Issues format
+    # repo.create(dict(title='My test issue', body='This needs to be fixed ASAP.'))
     
-    #Build Title
-    #Build First line containing filename and line#
-    #Quote the todo comment block
-    #Message (Build dict to send to templates), message consists of Complaint followed by Emphasis
-    #Return {title, body}
+    # Build Title
+    # Build First line containing filename and line#
+    # Quote the todo comment block
+    # Message (Build dict to send to templates), message consists of Complaint followed by Emphasis
+    # Return {title, body}
     
     data = buildTemplateData(todo)
     ret = {}
