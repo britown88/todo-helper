@@ -6,9 +6,11 @@ from pygments.lexers import PythonLexer
 from pygments.lexers import guess_lexer, guess_lexer_for_filename
 from pygments.formatter import Formatter
 from pygments.token import Comment
+from pygments.util import ClassNotFound
 
 
 PROJECT_PATH = os.path.abspath(os.path.dirname(__file__))
+IGNORE_LIST = ['.git']
 
 ## custom comment- and todo- finder formatter
 class NullFormatter(Formatter):
@@ -48,42 +50,45 @@ class NullFormatter(Formatter):
 
 # function to run formatter and capture output
 def parse(filename, codeInput):
-    lexer = guess_lexer_for_filename(filename, codeInput)
-    print "---------- %s -- %s" % (filename, lexer.name)
-    return highlight(
-        codeInput, 
-        lexer, 
-        NullFormatter())
+    try:
+        lexer = guess_lexer_for_filename(filename, codeInput)
+        print "---------- %s -- %s" % (filename, lexer.name)
+        return highlight(
+            codeInput, 
+            lexer, 
+            NullFormatter())
+    except ClassNotFound:
+        print "lexer not found"
+        return []
 
-def walk(testDir):
+
+def walk(repoDir):
     todos = []
-    testDirLen = len(testDir)
-    for dirname, dirnames, filenames in os.walk(testDir):
+    repoDirLen = len(repoDir)
+    for dirname, dirnames, filenames in os.walk(repoDir):
         for filename in filenames:
             fin = open(os.path.join(dirname, filename))
             code = fin.read()
             parsed = parse(filename, code)
             parsed = json.loads(parsed)
             for p in parsed:
-                p['filename'] = os.path.join(dirname, filename)[testDirLen:]
+                p['filename'] = os.path.join(dirname, filename)[repoDirLen:]
             if len(parsed) > 0:
                 todos = todos + parsed
 
         # Advanced usage:
         # editing the 'dirnames' list will stop os.walk() from recursing into there.
-        if '.git' in dirnames:
-            # don't go into any .git directories.
-            dirnames.remove('.git')
+        dirnames[:] = [dn for dn in dirnames if dn not in IGNORE_LIST]
 
     return todos
 
 if __name__ == '__main__':
-    testDir = os.path.join(
+    repoDir = os.path.join(
         PROJECT_PATH,
         '..',
         'test',
         'fixtures')
-    print walk(testDir)
+    print walk(repoDir)
 
     # For good fun, try:
     # src $ python findTodo.py 
