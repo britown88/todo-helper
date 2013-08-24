@@ -20,10 +20,10 @@ def buildComplaintTemplatesList():
     templates = []
     
     templates.append('This has been sitting here since {{ BlameDate }}...a little unprofessional don\'t you think?')
-    templates.append('I don\'t get it, {{ BlameFirstName }} added this {{ TimeSinceBlameDate }} ago!')
-    templates.append('Why was @{{ BlameUserName }} allowed to leave this here?')
+    templates.append('I don\'t get it, {{ BlameUserName }} added this {{ TimeSinceBlameDate }} ago!')
+    templates.append('Why was {{ BlameUserName }} allowed to leave this here?')
     templates.append('We\'ve had no traction on this since {{ BlameDate}}.')
-    templates.append('I thought {{ FileName }} was in @{{ BlameUserName }}\'s hands?')
+    templates.append('I thought {{ FileName }} was in {{ BlameUserName }}\'s hands?')
     templates.append('It\'s been {{ TimeSinceBlameDate }}.')
     
     return templates
@@ -50,8 +50,7 @@ def buildTemplateData(todo):
     
     userFormalName = buildUserFormalName(todo.blameUser)
     
-    data['BlameUserName'] = todo.blameUser
-    data['BlameFirstName'] = todo.blameUserFormalName.split(' ')[0]
+    data['BlameUserName'] = todo.blameUser.split(' ')[0]
     data['BlameDate'] = todo.blameDate
     data['TimeSinceBlameDate'] = buildDatePhrase(todo.blameDate)
     data['FileName'] = todo.filePath.rsplit('/', 1)[1].split('.')[0]

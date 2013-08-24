@@ -70,6 +70,11 @@ def walk(repoDir):
             fin = open(os.path.join(dirname, filename))
             code = fin.read()
             parsed = parse(filename, code)
+            
+            #Don't know how to read this file so move on...
+            if(len(parsed) == 0):
+                continue
+            
             parsed = json.loads(parsed)
             for p in parsed:
                 p['filename'] = os.path.join(dirname, filename)[repoDirLen:]
