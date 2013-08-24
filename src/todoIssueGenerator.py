@@ -48,10 +48,8 @@ def buildEmphasisTemplatesList():
 def buildTemplateData(todo):
     data = {}
     
-    userFormalName = buildUserFormalName(todo.blameUser)
-    
     data['BlameUserName'] = todo.blameUser.split(' ')[0]
-    data['BlameDate'] = todo.blameDate
+    data['BlameDate'] = todo.blameDate.split(' ')[0]
     data['TimeSinceBlameDate'] = buildDatePhrase(todo.blameDate)
     data['FileName'] = todo.filePath.rsplit('/', 1)[1].split('.')[0]
     data['FilePath'] = todo.filePath

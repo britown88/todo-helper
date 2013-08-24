@@ -85,7 +85,7 @@ def buildTodo(repo, todo):
     redisTodo = Todo()
     redisTodo.filePath = todo['filename']
     redisTodo.lineNumber = todo['linenumber']
-    redisTodo.commmentBlock = todo['value']
+    redisTodo.commentBlock = todo['value']
     
     blame(repo, redisTodo)
     
@@ -120,15 +120,21 @@ def blame(repo, todo):
         
     os.chdir('../../..')
     
+# Calls rm on the cloned folder!
+def deleteLocalRepo(repo):
+    call(['rm', '-rf', 'repos/repos::%s/%s'%(repo.userName, repo.repoName)])
+
+    
     
 def testTodos(gh):
-    repoList = findRepos(gh, 1)
-    if len(repoList) > 0:
-        repo = addRepoToRedis(repoList[0])
-        checkoutRepo(repo)
-        parseRepoForTodos(repo)
+    repoList = findRepos(gh, 100)
+    for r in repoList:
+        repo = addRepoToRedis(r)
         
-    return []
+        if repo:
+            checkoutRepo(repo)
+            parseRepoForTodos(repo)
+            deleteLocalRepo(repo)
             
 
 #grabs an amount of repos recently pushed to, checks them out and adds them to redis
