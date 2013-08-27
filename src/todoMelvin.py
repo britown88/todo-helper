@@ -7,7 +7,8 @@ from pygithub3 import Github
 from dateutil.parser import parse
 
 from db.todoRedis import connect
-from db.todoRepos import repoExists, addNewRepo, Todo
+from db.todoRepos import repoExists, addNewRepo, Todo, getRepos
+from todoIssueGenerator import buildIssue
 from findTodo import walk
 
 MAX_SIZE = 10240
@@ -31,25 +32,27 @@ def checkForValidEvent(gh, event):
             
     return None
 
-# Tries to find count repos form recent Github events and returns them
-# count is not guarunteed but serves as maximum
+# Returns count Github Repo objects from a collection of recent push events
+# Expect 1-5 seperate requests for larger counts
 def findRepos(gh, count):
     repoList = []
     
     if count <= 0: return repoList
-    
-    for event in gh.events.list().iterator():
-        repo = checkForValidEvent(gh, event)
+
+    while len(repoList) < count:
+        for event in gh.events.list().iterator():
+            repo = checkForValidEvent(gh, event)
         
-        if repo and repo not in repoList:
-            repoList.append(repo)
-            if len(repoList) == count: return repoList
+            if repo and repo not in repoList:
+                repoList.append(repo)
+                if len(repoList) == count: return repoList
             
     return repoList
 
 
 # Takes a Gihtub.Repo and sends it off to be stored in the redis
 # returns the resulting db.todoRepos.Repo    
+# Returns None if the Repo is already in Redis
 def addRepoToRedis(repo):
     redisRepo = None
     
@@ -61,14 +64,14 @@ def addRepoToRedis(repo):
 
 # Takes a db.todoRepos.Repo and clones the repository    
 def checkoutRepo(repo):
-    call(['git', 'clone', repo.gitUrl, 'repos/%s' % (repo.key())])
+    call(['git', 'clone', repo.gitUrl, 'repos/%s' % (repo.key().replace('/', '-'))])
     repo.status = "Cloned"
     repo.save()
     
 
 # Taks a db.todoRepos.Repo and iterates through the repo searching for Todo's
 def parseRepoForTodos(repo):
-    path = os.path.join(os.getcwd(), 'repos', repo.key())
+    path = os.path.join(os.getcwd(), 'repos', repo.key().replace('/', '-'))
     
     todoList = walk(path)
     
@@ -87,7 +90,8 @@ def buildTodo(repo, todo):
     redisTodo.lineNumber = todo['linenumber']
     redisTodo.commentBlock = todo['value']
     
-    blame(repo, redisTodo)
+    #Skip this Todo if Blame fails
+    if not blame(repo, redisTodo): return None
     
     #Add the new todo to the redis object
     repo.Todos.append(redisTodo)
@@ -97,14 +101,17 @@ def buildTodo(repo, todo):
     
 # Runs a git blame from the cmd line and parses it for UTC date and uName
 def blame(repo, todo):
-    os.chdir('repos/repos::%s/%s'%(repo.userName, repo.repoName))
-    
-    result = check_output([
-        'git', 'blame', 
-        todo.filePath.split('/', 1)[1], 
-        '-L', '%s,%s'%(todo.lineNumber, todo.lineNumber),
-        '-p'])
-        
+    os.chdir('repos/repos::%s-%s'%(repo.userName, repo.repoName))
+   
+    try:
+        result = check_output([
+            'git', 'blame', 
+            todo.filePath.split('/', 1)[1], 
+            '-L', '%s,%s'%(todo.lineNumber, todo.lineNumber),
+            '-p'])
+    except:
+        return False
+            
     resultDict = {}
     for x in result.split('\n'):
         if ' ' in x:
@@ -118,11 +125,13 @@ def blame(repo, todo):
     todo.blameDate = dt.strftime('%Y-%m-%d %H:%M:%S')
     todo.blameUser = resultDict['author']
         
-    os.chdir('../../..')
+    os.chdir('../..')
+
+    return True
     
 # Calls rm on the cloned folder!
 def deleteLocalRepo(repo):
-    call(['rm', '-rf', 'repos/repos::%s/%s'%(repo.userName, repo.repoName)])
+    call(['rm', '-rf', 'repos/repos::%s-%s'%(repo.userName, repo.repoName)])
 
     
     
@@ -136,21 +145,24 @@ def testTodos(gh):
             parseRepoForTodos(repo)
             deleteLocalRepo(repo)
             
+def testIssues():
+    repoList = getRepos()
+    
+    f = open("testIssues.txt", "w")
 
-#grabs an amount of repos recently pushed to, checks them out and adds them to redis
-#Takes a pygithub3.Github object (auhtenticated) and how many repos to pull at once
-def tagNewRepos(gh, count):         
-            
-    #find random shiny new repo that allows issues and hasnt been tagged before
-    chosenRepo = findRepos(gh, count)
+    for r in repoList:
+        todoCount = len(r.Todos)
+
+        if todoCount > 0:
+            displayCount = min(5, todoCount)
+
+            f.write(r.key()+"\n")
     
-    #Add repo to Redis
-    redisRepo = addNewRepo(chosenRepo.owner.login, chosenRepo.name)
-    
-    
-    call(['git', 'clone', chosenRepo.git_url, 'repos/%s' % (redisRepo.key())])
-            
-    
-              
-    
+            f.write("%i TODO's Found.  Displaying first %i\n" % (todoCount, displayCount))
+            f.write("--------------------------\n")
+            for i in range(0, displayCount):
+                todo = buildIssue(r.Todos[i])
+                if 'title' in todo and 'body' in todo:
+                    f.write("Title: %s\n\nBody:\n%s\n\n\n" % (todo['title'], todo['body']))
+
 

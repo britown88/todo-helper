@@ -128,9 +128,12 @@ def buildIssue(todo):
     
     data = buildTemplateData(todo)
     ret = {}
-    
-    ret['title'] = renderTemplate(titleTemplate, data)
-    ret['body'] = buildIssueBody(data)
+   
+    try: 
+        ret['title'] = renderTemplate(titleTemplate, data)
+        ret['body'] = buildIssueBody(data)
+    except:
+        pass
     
     return ret
     

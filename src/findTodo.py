@@ -1,5 +1,6 @@
 import json
 import os
+from time import clock
 
 from pygments import highlight
 from pygments.lexers import PythonLexer 
@@ -35,7 +36,17 @@ class NullFormatter(Formatter):
         linenumber = 1
         # look for todos.
         comments = []
+        t = clock()
+
         for ttype, value in tokensource:
+            
+            #Dont allow parsing a file for longer than 10s
+            if clock() - t >= 10.0:
+                print "File took too long to parse, skipping..."
+                outfile.write(json.dumps(comments))
+                return
+            
+
             if ttype.__str__() == Comment.__str__() or ttype.parent.__str__() == Comment.__str__():
                 if 'todo' in value.lower():
                     comments.append({
@@ -58,7 +69,7 @@ def parse(filename, codeInput):
             lexer, 
             NullFormatter())
     except ClassNotFound:
-        print "lexer not found"
+        # print "lexer not found"
         return []
 
 
@@ -67,7 +78,12 @@ def walk(repoDir):
     repoDirLen = len(repoDir)
     for dirname, dirnames, filenames in os.walk(repoDir):
         for filename in filenames:
-            fin = open(os.path.join(dirname, filename))
+            try:
+                fin = open(os.path.join(dirname, filename))
+            except:
+                print "File can't be opened, skipping..."
+                continue
+
             code = fin.read()
             parsed = parse(filename, code)
             
