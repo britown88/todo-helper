@@ -7,7 +7,8 @@ class Repo:
     def __init__(self):
         self.userName = ''
         self.repoName = ''
-        self.status = "Tagged"
+        self.gitUrl = ''
+        self.status = "New"
         self.Todos = []
         self.tagDate = datetime.now().strftime("%m/%d/%Y %H:%M:%S")
 
@@ -53,10 +54,9 @@ class Todo:
     def __init__(self):
         self.filePath = ''
         self.lineNumber = ''
-        self.commmentBlock = ''
+        self.commentBlock = ''
         self.blameUser = ''
         self.blameDate = ''
-        self.blameUserFormalName = ''
 
     def save(self, parent):
         key = '%s::todo::%s/%i' % (parent.key(), self.filePath.rsplit('/',1)[1], self.lineNumber)
@@ -88,11 +88,12 @@ def repoCount():
     r = todoRedis.connect()
     return r.scard('repos')
 
-def addNewRepo(user, repoName):
+def addNewRepo(user, repoName, gitUrl):
     r = todoRedis.connect()
     repo = Repo()
     repo.userName = user
     repo.repoName= repoName
+    repo.gitUrl = gitUrl
     
     repo.save()
     
