@@ -8,7 +8,8 @@ class Repo:
         self.userName = ''
         self.repoName = ''
         self.gitUrl = ''
-        self.status = "New"
+        self.status = 'New'
+        self.errorCode = 0
         self.Todos = []
         self.tagDate = datetime.now().strftime("%m/%d/%Y %H:%M:%S")
 

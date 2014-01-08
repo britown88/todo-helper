@@ -99,8 +99,8 @@ def buildTodo(repo, todo):
     repo.Todos.append(redisTodo)
     
     return redisTodo
-    
-    
+
+
 # Runs a git blame from the cmd line and parses it for UTC date and uName
 def blame(repo, todo):
     os.chdir('repos/repos::%s-%s'%(repo.userName, repo.repoName))
@@ -135,8 +135,7 @@ def blame(repo, todo):
 def deleteLocalRepo(repo):
     call(['rm', '-rf', 'repos/repos::%s-%s'%(repo.userName, repo.repoName)])
 
-    
-    
+
 def testTodos(gh):
     repoList = findRepos(gh, 100)
     for r in repoList:
