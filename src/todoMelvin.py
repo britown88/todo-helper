@@ -13,6 +13,8 @@ from findTodo import walk
 
 MAX_SIZE = 10240
 
+PROJECT_PATH = os.path.abspath(os.path.dirname(__file__))
+
 # From a public Github event, determine if it is a push event
 # Then determines if the repo being pushed to fits our criteria and returns it
 def checkForValidEvent(gh, event):    
@@ -164,5 +166,15 @@ def testIssues():
                 todo = buildIssue(r.Todos[i])
                 if 'title' in todo and 'body' in todo:
                     f.write("Title: %s\n\nBody:\n%s\n\n\n" % (todo['title'], todo['body']))
+
+
+
+if __name__ == "__main__":
+    login, password = open(os.path.join(PROJECT_PATH, '..', 'config', 'userpass.txt')
+        ).read().split('\n')
+    gh = Github(login=login, password=password)
+    
+
+
 
 
