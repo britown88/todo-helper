@@ -138,7 +138,7 @@ def deleteLocalRepo(repo):
     
     
 def testTodos(gh):
-    repoList = findRepos(gh, 100)
+    repoList = findRepos(gh, 10)
     for r in repoList:
         repo = addRepoToRedis(r)
         
@@ -171,9 +171,11 @@ def testIssues():
 
 if __name__ == "__main__":
     login, password = open(os.path.join(PROJECT_PATH, '..', 'config', 'userpass.txt')
-        ).read().split('\n')
+        ).read().split('\n')[:2]
     gh = Github(login=login, password=password)
     
+    testTodos(gh)
+    testIssues()
 
 
 
