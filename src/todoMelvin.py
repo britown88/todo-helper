@@ -150,7 +150,7 @@ def testTodos(gh):
 def testIssues():
     repoList = getRepos()
     
-    f = open("testIssues.txt", "w")
+    f = open(os.path.join('test_output', "testIssues.txt"), "w")
 
     for r in repoList:
         todoCount = len(r.Todos)
