@@ -6,6 +6,7 @@ from datetime import datetime, timedelta
 from pygithub3 import Github
 from dateutil.parser import parse
 
+import config
 from db.todoRedis import connect
 from db.todoRepos import repoExists, addNewRepo, Todo, getRepos
 from todoIssueGenerator import buildIssue
@@ -169,7 +170,7 @@ def testIssues():
 
 
 if __name__ == "__main__":
-    login, password = open(os.path.join(PROJECT_PATH, '..', 'config', 'userpass.txt')
+    login, password = open(os.path.join(PROJECT_PATH, '..', 'config', config.userpassFilename)
         ).read().split('\n')
     gh = Github(login=login, password=password)
     
