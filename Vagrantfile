@@ -11,7 +11,7 @@ Vagrant.configure("2") do |config|
   config.vm.network :forwarded_port, guest: 22, host: 2275      # unique ssh
   
   # config.vm.synced_folder "../django/", "/home/vagrant/app/django"
-  config.vm.synced_folder "src/", "/home/vagrant/app/src"
+  # config.vm.synced_folder "src/", "/home/vagrant/app/src"
 
 
   config.ssh.forward_agent = true
