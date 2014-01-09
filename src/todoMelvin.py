@@ -6,12 +6,16 @@ from datetime import datetime, timedelta
 from pygithub3 import Github
 from dateutil.parser import parse
 
+import config
 from db.todoRedis import connect
 from db.todoRepos import repoExists, addNewRepo, Todo, getRepos
 from todoIssueGenerator import buildIssue
 from findTodo import walk
 
 MAX_SIZE = 10240
+
+PROJECT_PATH = os.path.abspath(os.path.dirname(__file__))
+print "PROJECT_PATH:%s" % PROJECT_PATH
 
 # From a public Github event, determine if it is a push event
 # Then determines if the repo being pushed to fits our criteria and returns it
@@ -97,8 +101,8 @@ def buildTodo(repo, todo):
     repo.Todos.append(redisTodo)
     
     return redisTodo
-    
-    
+
+
 # Runs a git blame from the cmd line and parses it for UTC date and uName
 def blame(repo, todo):
     os.chdir('repos/repos::%s-%s'%(repo.userName, repo.repoName))
@@ -133,10 +137,9 @@ def blame(repo, todo):
 def deleteLocalRepo(repo):
     call(['rm', '-rf', 'repos/repos::%s-%s'%(repo.userName, repo.repoName)])
 
-    
-    
+
 def testTodos(gh):
-    repoList = findRepos(gh, 100)
+    repoList = findRepos(gh, 10)
     for r in repoList:
         repo = addRepoToRedis(r)
         
@@ -147,8 +150,11 @@ def testTodos(gh):
             
 def testIssues():
     repoList = getRepos()
-    
-    f = open("testIssues.txt", "w")
+
+    print "PROJECT_PATH:%s" % PROJECT_PATH
+    print os.path.join(PROJECT_PATH, '..', 'test_output', "testIssues.txt")
+
+    f = open(os.path.join(PROJECT_PATH, '..', 'test_output', "testIssues.txt"), "w")
 
     for r in repoList:
         todoCount = len(r.Todos)
@@ -164,5 +170,17 @@ def testIssues():
                 todo = buildIssue(r.Todos[i])
                 if 'title' in todo and 'body' in todo:
                     f.write("Title: %s\n\nBody:\n%s\n\n\n" % (todo['title'], todo['body']))
+
+
+
+if __name__ == "__main__":
+    login, password = open(os.path.join(PROJECT_PATH, '..', 'config', config.userpassFilename)
+        ).read().split('\n')[:2]
+    gh = Github(login=login, password=password)
+    
+    testTodos(gh)
+    testIssues()
+
+
 
 
