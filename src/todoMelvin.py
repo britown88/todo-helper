@@ -152,9 +152,9 @@ def testIssues():
     repoList = getRepos()
 
     print "PROJECT_PATH:%s" % PROJECT_PATH
-    print os.path.join(PROJECT_PATH, 'test_output', "testIssues.txt")
+    print os.path.join(PROJECT_PATH, '..', 'test_output', "testIssues.txt")
 
-    f = open(os.path.join(PROJECT_PATH, 'test_output', "testIssues.txt"), "w")
+    f = open(os.path.join(PROJECT_PATH, '..', 'test_output', "testIssues.txt"), "w")
 
     for r in repoList:
         todoCount = len(r.Todos)
