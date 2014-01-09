@@ -80,14 +80,14 @@ def render_template_file(filename, nginxVars):
 def deploy():
     sudo('sudo rm -rf ~/app/todo-helper')
     run('mkdir -p ~/app')
-    run('sudo chgrp -R vagrant ~/app')
-    run('sudo chmod g+wx ~/app')
     # sudo('git clone git@github.com:p4r4digm/todo-helper.git -b sys-admin-peter ~/app/todo-helper',
     #     pty=False)
 
     # public repo, it works.
     sudo('git clone https://github.com/p4r4digm/todo-helper.git -b sys-admin-peter ~/app/todo-helper',
         pty=False)
+    run('sudo chgrp -R vagrant ~/app')
+    run('sudo chmod -R g+wx ~/app')
 
 
 @task
