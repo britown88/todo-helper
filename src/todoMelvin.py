@@ -15,6 +15,7 @@ from findTodo import walk
 MAX_SIZE = 10240
 
 PROJECT_PATH = os.path.abspath(os.path.dirname(__file__))
+print "PROJECT_PATH:%s" % PROJECT_PATH
 
 # From a public Github event, determine if it is a push event
 # Then determines if the repo being pushed to fits our criteria and returns it
