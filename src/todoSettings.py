@@ -1,5 +1,5 @@
 class Settings:
-    def __init__(self):
+    def __init__(self, filename):
         #Github login info
         self.ghLogin = ''
         self.ghPassword = ''
@@ -17,8 +17,7 @@ class Settings:
         #Debug settings
         self.debug = False
         self.debugOutputFile = ''
-
-    def loadFromFile(self, filename):
+        
         try:
             lines = open(filename).read().split('\n')
         except:
@@ -28,6 +27,6 @@ class Settings:
         for line in lines:
             item = line.replace(' ', '').split('=')
             if item[0] in dir(self):
-                setattr(self, item[0], item[1])
+                setattr(self, item[0], item[1])        
             
 

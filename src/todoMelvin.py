@@ -1,5 +1,13 @@
 import random
 import os
+import sys
+
+PROJECT_PATH = os.path.abspath(os.path.dirname(__file__))
+sys.path.append(os.path.join(PROJECT_PATH, '..'))
+from todoSettings import Settings
+
+settings = Settings(os.path.join(PROJECT_PATH, '..', 'config', 'settings.config'))
+
 from subprocess import call, check_output
 from datetime import datetime, timedelta
 
@@ -11,9 +19,7 @@ from db.todoRepos import repoExists, addNewRepo, Todo, getRepos
 from todoIssueGenerator import buildIssue
 from findTodo import walk
 
-MAX_SIZE = 10240
 
-PROJECT_PATH = os.path.abspath(os.path.dirname(__file__))
 
 # From a public Github event, determine if it is a push event
 # Then determines if the repo being pushed to fits our criteria and returns it
@@ -27,7 +33,7 @@ def checkForValidEvent(gh, event):
             try:
                 chosenRepo = gh.repos.get(username, reponame)
                 if chosenRepo.has_issues and not chosenRepo.fork \
-                    and chosenRepo.size <= MAX_SIZE:
+                    and chosenRepo.size <= int(settings.maxRepoSize):
                     return chosenRepo
             except:
                 pass
@@ -170,9 +176,8 @@ def testIssues():
 
 
 if __name__ == "__main__":
-    login, password = open(os.path.join(PROJECT_PATH, '..', 'config', 'userpass.txt')
-        ).read().split('\n')[:2]
-    gh = Github(login=login, password=password)
+
+    gh = Github(login = settings.ghLogin, password = settings.ghPassword)
     
     testTodos(gh)
     testIssues()

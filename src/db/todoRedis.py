@@ -1,9 +1,11 @@
 import redis
 
-host = 'localhost'
-port = 6379
-db = 0
-password = None
+from src.todoMelvin import settings
 
+#Connect to Redis server with src.Settings
 def connect():
-    return redis.StrictRedis(host=host, port=port, db=db, password=password)    
+    return redis.StrictRedis(
+        host = settings.redisHost, 
+        port = int(settings.redisPort), 
+        db = int(settings.redisDB), 
+        password = settings.redisPassword)    

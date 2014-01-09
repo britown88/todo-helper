@@ -1,5 +1,7 @@
 *.swp
 *.pyc
 *.DS_Store
+*~
+config/*
 .vagrant/
-config/userpass.txt
+

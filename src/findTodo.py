@@ -9,12 +9,15 @@ from pygments.formatter import Formatter
 from pygments.token import Comment
 from pygments.util import ClassNotFound
 
+from src.todoMelvin import settings
+
 
 PROJECT_PATH = os.path.abspath(os.path.dirname(__file__))
 IGNORE_LIST = ['.git']
 
 ## custom comment- and todo- finder formatter
 class NullFormatter(Formatter):
+
     # generator to find substrings
     def find_all(self, a_str, sub):
         start = 0
@@ -40,8 +43,8 @@ class NullFormatter(Formatter):
 
         for ttype, value in tokensource:
             
-            #Dont allow parsing a file for longer than 10s
-            if clock() - t >= 10.0:
+            #Dont allow parsing a file for longer than the timeout
+            if clock() - t >= float(settings.fileParsingTimeout):
                 print "File took too long to parse, skipping..."
                 outfile.write(json.dumps(comments))
                 return
