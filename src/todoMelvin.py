@@ -127,6 +127,7 @@ def blame(repo, todo):
     dt = dt + timedelta(hours=tzHours)
     
     todo.blameDate = dt.strftime('%Y-%m-%d %H:%M:%S')
+    todo.blameDateEuro = dt.strftime('%d-%m-%Y %H:%M:%S')
     todo.blameUser = resultDict['author']
         
     os.chdir('../..')
