@@ -1,5 +1,6 @@
 import json
 import os
+import codecs
 from time import clock
 
 from pygments import highlight
@@ -9,12 +10,16 @@ from pygments.formatter import Formatter
 from pygments.token import Comment
 from pygments.util import ClassNotFound
 
+from src.todoMelvin import settings
+from src.todoLogging import WarningLevels, log, callWithLogging
+
 
 PROJECT_PATH = os.path.abspath(os.path.dirname(__file__))
 IGNORE_LIST = ['.git']
 
 ## custom comment- and todo- finder formatter
 class NullFormatter(Formatter):
+
     # generator to find substrings
     def find_all(self, a_str, sub):
         start = 0
@@ -38,14 +43,17 @@ class NullFormatter(Formatter):
         comments = []
         t = clock()
 
-        for ttype, value in tokensource:
+        for ttype, value in tokensource:            
+            #skip giant comments       
+            if len(value) > int(settings.arbitraryTokenMaxLength):
+                log(WarningLevels.Debug(), "Large Comment Skipped.  Size: %s Max: %s"%(len(value), settings.arbitraryTokenMaxLength))
+                continue
             
-            #Dont allow parsing a file for longer than 10s
-            if clock() - t >= 10.0:
-                print "File took too long to parse, skipping..."
+            #Dont allow parsing a file for longer than the timeout  
+            if clock() - t >= float(settings.fileParsingTimeout):
+                log(WarningLevels.Debug(), "File timeout. %i TODOs committed"%(len(comments)))
                 outfile.write(json.dumps(comments))
-                return
-            
+                return            
 
             if ttype.__str__() == Comment.__str__() or ttype.parent.__str__() == Comment.__str__():
                 if 'todo' in value.lower():
@@ -60,16 +68,22 @@ class NullFormatter(Formatter):
         outfile.write(json.dumps(comments))
 
 # function to run formatter and capture output
-def parse(filename, codeInput):
+def parse(filename, filestream):
+    try:
+        codeInput = filestream.read().encode('ascii', 'replace') #replace unreadable unicode chars to '?'
+    except:
+        log(WarningLevels.Debug(), "Failed to read file %s as unicode."%(filename))
+        return []
+
     try:
         lexer = guess_lexer_for_filename(filename, codeInput)
-        print "---------- %s -- %s" % (filename, lexer.name)
+        log(WarningLevels.Debug(), "Parsing %s with Lexer %s"%(filename, lexer.name))
         return highlight(
             codeInput, 
             lexer, 
             NullFormatter())
     except ClassNotFound:
-        # print "lexer not found"
+        log(WarningLevels.Debug(), "Lexer not found for file %s"%(filename))
         return []
 
 
@@ -79,15 +93,14 @@ def walk(repoDir):
     for dirname, dirnames, filenames in os.walk(repoDir):
         for filename in filenames:
             try:
-                fin = open(os.path.join(dirname, filename))
+                fin = codecs.open(os.path.join(dirname, filename), encoding = 'utf-8')
             except:
-                print "File can't be opened, skipping..."
+                log(WarningLevels.Warn(), "File %s cannot be opened. Skipping."%(filename))
                 continue
 
-            code = fin.read()
-            parsed = parse(filename, code)
+            parsed = parse(filename, fin)
             
-            #Don't know how to read this file so move on...
+            #No TODO's were found
             if(len(parsed) == 0):
                 continue
             

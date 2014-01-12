@@ -6,13 +6,19 @@ from pygithub3 import Github
 from dateutil.relativedelta import relativedelta
 
 from db.todoRepos import Todo
+from src.todoLogging import WarningLevels, log, callWithLogging
 
 titleTemplate = 'Unresolved TODO in {{ FileName }}:{{ LineNumber }}'
 issueHeaderTemplate = 'File: `{{ FilePath }}`\nLine: {{ LineNumber }}\n\n```\n{{ CommentBlock }}\n```'
 
 # Builds a template and renders it with the passed-in data
 def renderTemplate(tempString, data):
-    return Template.render(Template(tempString), data)
+    try:
+        return Template.render(Template(tempString), data)
+    except: 
+        log(WarningLevels.Debug(), "TODO Failed to render to a template \'%s\': %s"%(tempString, data))
+        return None
+    
 
 
 # Returns a list of complain templates
@@ -68,9 +74,11 @@ def buildRandomEmployer():
 # Builds and returns the dictionary to popuate templates with
 # Takes a db.todoRepo.Todo()
 def buildTemplateData(todo):
-    data = {}
+    data = {}    
     
-    data['BlameUserName'] = todo.blameUser.split(' ')[0]
+    blameUser = todo.blameUser.split(' ')[0]
+    data['BlameUserName'] = unicode(blameUser,'utf8').encode('ascii',errors='replace')
+    
     data['BlameDate'] = todo.blameDate.split(' ')[0]
     data['BlameDateEuro'] = todo.blameDateEuro.split(' ')[0]
     data['TimeSinceBlameDate'] = buildDatePhrase(todo.blameDate)
@@ -155,11 +163,10 @@ def buildIssue(todo):
     data = buildTemplateData(todo)
     ret = {}
    
-    try: 
-        ret['title'] = renderTemplate(titleTemplate, data)
-        ret['body'] = buildIssueBody(data)
-    except:
-        pass
+
+    ret['title'] = renderTemplate(titleTemplate, data)
+    ret['body'] = buildIssueBody(data)
+
     
     return ret
     

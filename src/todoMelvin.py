@@ -1,5 +1,13 @@
 import random
 import os
+import sys
+
+PROJECT_PATH = os.path.abspath(os.path.dirname(__file__))
+sys.path.append(os.path.join(PROJECT_PATH, '..'))
+from todoSettings import Settings
+
+settings = Settings(os.path.join(PROJECT_PATH, '..', 'config', 'settings.config'))
+
 from subprocess import call, check_output
 from datetime import datetime, timedelta
 
@@ -9,13 +17,9 @@ from dateutil.parser import parse
 import config
 from db.todoRedis import connect
 from db.todoRepos import repoExists, addNewRepo, Todo, getRepos
-from todoIssueGenerator import buildIssue
-from findTodo import walk
-
-MAX_SIZE = 10240
-
-PROJECT_PATH = os.path.abspath(os.path.dirname(__file__))
-print "PROJECT_PATH:%s" % PROJECT_PATH
+from src.todoIssueGenerator import buildIssue
+from src.findTodo import walk
+from src.todoLogging import WarningLevels, log, callWithLogging
 
 # From a public Github event, determine if it is a push event
 # Then determines if the repo being pushed to fits our criteria and returns it
@@ -29,7 +33,7 @@ def checkForValidEvent(gh, event):
             try:
                 chosenRepo = gh.repos.get(username, reponame)
                 if chosenRepo.has_issues and not chosenRepo.fork \
-                    and chosenRepo.size <= MAX_SIZE:
+                    and chosenRepo.size <= int(settings.maxRepoSize):
                     return chosenRepo
             except:
                 pass
@@ -49,8 +53,11 @@ def findRepos(gh, count):
         
             if repo and repo not in repoList:
                 repoList.append(repo)
-                if len(repoList) == count: return repoList
-            
+                if len(repoList) == count: 
+                    log(WarningLevels.Info(), "%i valid repos found from Github"%(len(repoList)))
+                    return repoList
+                
+    log(WarningLevels.Info(), "%i valid repos found from Github"%(len(repoList)))            
     return repoList
 
 
@@ -60,15 +67,17 @@ def findRepos(gh, count):
 def addRepoToRedis(repo):
     redisRepo = None
     
-    if not repoExists(repo.owner.login, repo.name):
+    if not repoExists(repo.owner.login, repo.name):          
         redisRepo = addNewRepo(repo.owner.login, repo.name, repo.git_url)
+        log(WarningLevels.Info(), "New Repo %s/%s added to Redis"%(repo.owner.login, repo.name))  
         
     return redisRepo
 
 
 # Takes a db.todoRepos.Repo and clones the repository    
 def checkoutRepo(repo):
-    call(['git', 'clone', repo.gitUrl, 'repos/%s' % (repo.key().replace('/', '-'))])
+    log(WarningLevels.Info(), "Cloning %s..."%(repo.key()))  
+    callWithLogging(['git', 'clone', '--quiet', repo.gitUrl, 'repos/%s' % (repo.key().replace('/', '-'))])
     repo.status = "Cloned"
     repo.save()
     
@@ -77,7 +86,11 @@ def checkoutRepo(repo):
 def parseRepoForTodos(repo):
     path = os.path.join(os.getcwd(), 'repos', repo.key().replace('/', '-'))
     
+    log(WarningLevels.Info(), "Parsing repo %s for TODOs..."%(repo.key()))
+    
     todoList = walk(path)
+    
+    log(WarningLevels.Info(), "%i TODOs found in %s"%(len(todoList), repo.key())) 
     
     for todo in todoList:
         buildTodo(repo, todo)
@@ -136,7 +149,8 @@ def blame(repo, todo):
     
 # Calls rm on the cloned folder!
 def deleteLocalRepo(repo):
-    call(['rm', '-rf', 'repos/repos::%s-%s'%(repo.userName, repo.repoName)])
+    log(WarningLevels.Info(), "Deleting local repo %s/%s"%(repo.userName, repo.repoName)) 
+    callWithLogging(['rm', '-rf', 'repos/repos::%s-%s'%(repo.userName, repo.repoName)])
 
 
 def testTodos(gh):
@@ -175,9 +189,8 @@ def testIssues():
 
 
 if __name__ == "__main__":
-    login, password = open(os.path.join(PROJECT_PATH, '..', 'config', config.userpassFilename)
-        ).read().split('\n')[:2]
-    gh = Github(login=login, password=password)
+
+    gh = Github(login = settings.ghLogin, password = settings.ghPassword)
     
     testTodos(gh)
     testIssues()

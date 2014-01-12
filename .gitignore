@@ -1,7 +1,9 @@
 *.swp
 *.pyc
 *.DS_Store
+*~
+config/*
 .vagrant/
-config/userpass.txt
+
 config/todo-helper_deploy_key
 config/todo-helper_deploy_key.pub
