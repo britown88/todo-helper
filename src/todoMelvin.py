@@ -16,9 +16,9 @@ from dateutil.parser import parse
 
 from db.todoRedis import connect
 from db.todoRepos import repoExists, addNewRepo, Todo, getRepos
-from todoIssueGenerator import buildIssue
-from findTodo import walk
-from todoLogging import *
+from src.todoIssueGenerator import buildIssue
+from src.findTodo import walk
+from src.todoLogging import WarningLevels, log, callWithLogging
 
 
 

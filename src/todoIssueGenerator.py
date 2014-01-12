@@ -6,7 +6,7 @@ from pygithub3 import Github
 from dateutil.relativedelta import relativedelta
 
 from db.todoRepos import Todo
-from src.todoLogging import *
+from src.todoLogging import WarningLevels, log, callWithLogging
 
 titleTemplate = 'Unresolved TODO in {{ FileName }}:{{ LineNumber }}'
 issueHeaderTemplate = 'File: {{ FilePath }}\nLine: {{ LineNumber }}\n\n```\n{{ CommentBlock }}\n```'

@@ -11,7 +11,7 @@ from pygments.token import Comment
 from pygments.util import ClassNotFound
 
 from src.todoMelvin import settings
-from src.todoLogging import *
+from src.todoLogging import WarningLevels, log, callWithLogging
 
 
 PROJECT_PATH = os.path.abspath(os.path.dirname(__file__))
