@@ -18,6 +18,7 @@ from db.todoRedis import connect
 from db.todoRepos import repoExists, addNewRepo, Todo, getRepos
 from todoIssueGenerator import buildIssue
 from findTodo import walk
+from todoLogging import *
 
 
 
@@ -53,8 +54,11 @@ def findRepos(gh, count):
         
             if repo and repo not in repoList:
                 repoList.append(repo)
-                if len(repoList) == count: return repoList
-            
+                if len(repoList) == count: 
+                    log(WarningLevels.Info(), "%i valid repos found from Github"%(len(repoList)))
+                    return repoList
+                
+    log(WarningLevels.Info(), "%i valid repos found from Github"%(len(repoList)))            
     return repoList
 
 
@@ -64,15 +68,17 @@ def findRepos(gh, count):
 def addRepoToRedis(repo):
     redisRepo = None
     
-    if not repoExists(repo.owner.login, repo.name):
+    if not repoExists(repo.owner.login, repo.name):          
         redisRepo = addNewRepo(repo.owner.login, repo.name, repo.git_url)
+        log(WarningLevels.Info(), "New Repo %s/%s added to Redis"%(repo.owner.login, repo.name))  
         
     return redisRepo
 
 
 # Takes a db.todoRepos.Repo and clones the repository    
 def checkoutRepo(repo):
-    call(['git', 'clone', repo.gitUrl, 'repos/%s' % (repo.key().replace('/', '-'))])
+    log(WarningLevels.Info(), "Cloning %s..."%(repo.key()))  
+    callWithLogging(['git', 'clone', '--quiet', repo.gitUrl, 'repos/%s' % (repo.key().replace('/', '-'))])
     repo.status = "Cloned"
     repo.save()
     
@@ -81,7 +87,11 @@ def checkoutRepo(repo):
 def parseRepoForTodos(repo):
     path = os.path.join(os.getcwd(), 'repos', repo.key().replace('/', '-'))
     
+    log(WarningLevels.Info(), "Parsing repo %s for TODOs..."%(repo.key()))
+    
     todoList = walk(path)
+    
+    log(WarningLevels.Info(), "%i TODOs found in %s"%(len(todoList), repo.key())) 
     
     for todo in todoList:
         buildTodo(repo, todo)
@@ -139,7 +149,8 @@ def blame(repo, todo):
     
 # Calls rm on the cloned folder!
 def deleteLocalRepo(repo):
-    call(['rm', '-rf', 'repos/repos::%s-%s'%(repo.userName, repo.repoName)])
+    log(WarningLevels.Info(), "Deleting local repo %s/%s"%(repo.userName, repo.repoName)) 
+    callWithLogging(['rm', '-rf', 'repos/repos::%s-%s'%(repo.userName, repo.repoName)])
 
     
     
