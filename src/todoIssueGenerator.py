@@ -9,7 +9,7 @@ from db.todoRepos import Todo
 from src.todoLogging import WarningLevels, log, callWithLogging
 
 titleTemplate = 'Unresolved TODO in {{ FileName }}:{{ LineNumber }}'
-issueHeaderTemplate = 'File: {{ FilePath }}\nLine: {{ LineNumber }}\n\n```\n{{ CommentBlock }}\n```'
+issueHeaderTemplate = 'File: `{{ FilePath }}`\nLine: {{ LineNumber }}\n\n```\n{{ CommentBlock }}\n```'
 
 # Builds a template and renders it with the passed-in data
 def renderTemplate(tempString, data):
@@ -25,29 +25,51 @@ def renderTemplate(tempString, data):
 def buildComplaintTemplatesList():
     templates = []
     
-    templates.append('This has been sitting here since {{ BlameDate }}...a little unprofessional don\'t you think?')
-    templates.append('I don\'t get it, {{ BlameUserName }} added this {{ TimeSinceBlameDate }} ago!')
-    templates.append('Why was {{ BlameUserName }} allowed to leave this here?')
-    templates.append('We\'ve had no traction on this since {{ BlameDate}}.')
-    templates.append('I thought {{ FileName }} was in {{ BlameUserName }}\'s hands?')
-    templates.append('It\'s been {{ TimeSinceBlameDate }}.')
-    
+    templates.append("This has been sitting here since {{ BlameDate }}...a little unprofessional don't you think?")
+    templates.append("I don't get it, {{ BlameUserName }} added this {{ TimeSinceBlameDate }} ago!")
+    templates.append("Why was {{ BlameUserName }} allowed to leave this here?")
+    templates.append("We've had no traction on this since {{ BlameDate}}.")
+    templates.append("I thought {{ FileName }} was in {{ BlameUserName }}'s hands?")
+    templates.append("It's been {{ TimeSinceBlameDate }}.")
+    templates.append("I've been waiting for this for {{ TimeSinceBlameDate }}.")
+    templates.append("I've been waiting for this since {{ BlameDate }}.")
+
     return templates
-    
+ 
 # Returns a list of emphasis templates
 def buildEmphasisTemplatesList():
     templates = []
     
-    templates.append('Seriously.')
-    templates.append('Is there ever going to be any progress on this?')
-    templates.append('I\'m confused as to why this is still a TODO...')
-    templates.append('Couldn\'t you just go ahead and implement this?')
-    templates.append('I find it pretty hilarious that this continues to go unresolved.')
-    templates.append('Will there be resolution on this in the project\'s lifetime?')
-    templates.append('I think I speak for many when I say that the lack of update on this is non-trivially detrimental.')
-    templates.append('How can we expect to have full-featured release when the code itself is fragmented and incomplete?')
-    
+    templates.append("Seriously.")
+    templates.append("Is there ever going to be any progress on this?")
+    templates.append("I'm confused as to why this is still a TODO...")
+    templates.append("Couldn't you just go ahead and implement this?")
+    templates.append("I find it pretty hilarious that this continues to go unresolved.")
+    templates.append("Will there be resolution on this in the project's lifetime?")
+    templates.append("I think I speak for many when I say that the lack of update on this is non-trivially detrimental.")
+    templates.append("How can we expect to have full-featured release when the code itself is fragmented and incomplete?")
+    templates.append("Maybe we should just can this whole feature.")
+    templates.append("We are letting down the community.")
+    templates.append("This would be a firing offense {{ RandomCompany }}.")
+    templates.append("Who is QAing this project???")
+    templates.append("Read it again: \n{{CommentBlock}}")
+    templates.append("Please advise.")
+    templates.append("Is there a hacky workaround?")
+    templates.append("Can {{BlameUserName}} bang it out?")
+    templates.append("I'm available for consultation.")
+
     return templates
+
+def buildRandomEmployer():
+    templates = []
+    templates.append('at Microsoft')
+    templates.append('at Facebook')
+    templates.append('at Google')
+    templates.append('at an actual company')
+    templates.append('in the real world')
+    templates.append('in the professional world')
+
+    return random.choice(templates)
 
 # Builds and returns the dictionary to popuate templates with
 # Takes a db.todoRepo.Todo()
@@ -58,15 +80,16 @@ def buildTemplateData(todo):
     data['BlameUserName'] = unicode(blameUser,'utf8').encode('ascii',errors='replace')
     
     data['BlameDate'] = todo.blameDate.split(' ')[0]
+    data['BlameDateEuro'] = todo.blameDateEuro.split(' ')[0]
     data['TimeSinceBlameDate'] = buildDatePhrase(todo.blameDate)
     data['FileName'] = todo.filePath.rsplit('/', 1)[1].split('.')[0]
     data['FilePath'] = todo.filePath
     data['LineNumber'] = todo.lineNumber
     data['CommentBlock'] = todo.commentBlock
+    data['RandomCompany'] = buildRandomEmployer()
     
     return data
 
-    
 # Builds a string describing the passed date relative to the current date 
 # in a human-readable phrase
 # Passed in data shoud be in 'yyyy-mm-dd HH::MM:SS' and be UTC
@@ -109,6 +132,9 @@ def buildDatePhrase(dateString):
 # Compiles the different parts of the issue's body and returns the final string
 # Takes the data dictionary to render the templates with
 def buildIssueBody(data):
+    if random.randint(0,1) == 1:
+        data['BlameDate'] = data['BlameDateEuro']
+
     emphasisList = buildEmphasisTemplatesList()
     complaintList = buildComplaintTemplatesList()
     

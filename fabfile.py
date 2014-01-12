@@ -19,13 +19,18 @@ def vagrant(app='all', boot=True, destroy=False):
     if destroy: local('vagrant destroy')
     if boot: local('vagrant up --provider virtualbox')
 
-    env.host = '127.0.0.1:2275'
+    env.hosts = ['127.0.0.1:2275']
 
     # env.update(APP_ENV['vagrant'])
 
     # # use vagrant ssh key
-    # result = local('vagrant ssh-config | grep IdentityFile', capture=True)
-    # env.key_filename = result.split()[1].strip('"')
+    result = local('vagrant ssh-config | grep IdentityFile', capture=True)
+
+    print result
+    env.key_filename = result.split()[1].strip('"')
+    env.user = 'vagrant'
+    env.disable_known_hosts = True
+
 
 @task
 def prod():
@@ -41,15 +46,18 @@ def build():
     sudo('sudo add-apt-repository ppa:rwky/redis', pty=False, quiet=True)
     system_update()
     system_install('redis-server')
+    system_install('git')
+    system_install('nginx uwsgi')
 
-    system_install('python-software-properties python g++ make') #pip deps
+    system_install('python-software-properties python g++ make python-pip') #pip deps
 
-    pip_install_from_requirements_file('./pip-reqs')
+    reqs = file(os.path.join(PROJECT_PATH, 'pip-reqs')).read().split()
+    pip(reqs)
 
 def pip_install_from_requirements_file(filename):
-    sudo('sudo pip install -r %s' % filename, shell=False)
+    sudo('sudo pip install -r %s' % os.path.join(PROJECT_PATH, filename), shell=False)
 
-def pip(*packages):
+def pip(packages):
     sudo('sudo pip install %s' % ' '.join(packages), shell=False)
 
 def system_update():
@@ -63,18 +71,32 @@ def render_template_file(filename, nginxVars):
     tmpl = jinja_env.get_template(filename)
     return StringIO(tmpl.render(nginxVars))
 
+
 ##########################################
 # Clonecode/deploy task, and it's related subtasks
 ##########################################
 
 @task
 def deploy():
+    sudo('sudo rm -rf ~/app/todo-helper')
+    run('mkdir -p ~/app')
+    # sudo('git clone git@github.com:p4r4digm/todo-helper.git -b sys-admin-peter ~/app/todo-helper',
+    #     pty=False)
 
-    run('git clone git@github.com:p4r4digm/todo-helper.git ~/app/todo-helper',
+    # public repo, it works.
+    sudo('git clone https://github.com/p4r4digm/todo-helper.git -b sys-admin-peter ~/app/todo-helper',
         pty=False)
-    # with cd('~/app/%s' % app['name']):
-        # run('git checkout %s' % app['branch'])
-    sudo('chgrp -R www-data ~/app')
+    run('sudo chgrp -R vagrant ~/app')
+    run('sudo chmod -R g+wx ~/app')
+
+
+@task
+def config():
+    # put('./config/sshconfig', '~/.ssh/config', use_sudo=True)
+
+    put('./config/todo-helper_deploy_key', '~/.ssh/id_rsa', use_sudo=True)
+
+    put('./config/userpass.txt', '~/app/todo-helper/config/userpass.txt', use_sudo=True)
 
 ##############################################
 # restart_all task, and it's related subtasks
@@ -85,6 +107,8 @@ def deploy():
 @task
 def restart_all():
     restart_nginx()
+    with cd('~/app/todo-helper/src'):
+        run('python todoMelvin.py')
 
 @task
 def restart_nginx():

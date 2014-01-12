@@ -8,7 +8,8 @@ class Repo:
         self.userName = ''
         self.repoName = ''
         self.gitUrl = ''
-        self.status = "New"
+        self.status = 'New'
+        self.errorCode = 0
         self.Todos = []
         self.tagDate = datetime.now().strftime("%m/%d/%Y %H:%M:%S")
 
@@ -60,11 +61,11 @@ class Todo:
 
     def save(self, parent):
         key = '%s::todo::%s/%i' % (parent.key(), self.filePath.rsplit('/',1)[1], self.lineNumber)
-        listKey = '%s::todo' % (parent.key())
         members = [attr for attr in dir(self) if not callable(getattr(self, attr)) and not attr.startswith("__")]
 
+        # Save into the Repo's set
         r = todoRedis.connect()
-        r.sadd(listKey, key)
+        r.sadd('%s::todo' % (parent.key()), key)
 
         for m in members:
             r.hset(key, m, getattr(self, m))
@@ -81,6 +82,7 @@ class Todo:
         if r.hlen(key) > 0:
             for m in members:
                 setattr(self, m, r.hget(key, m))
+
 
         
 

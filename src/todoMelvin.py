@@ -14,13 +14,12 @@ from datetime import datetime, timedelta
 from pygithub3 import Github
 from dateutil.parser import parse
 
+import config
 from db.todoRedis import connect
 from db.todoRepos import repoExists, addNewRepo, Todo, getRepos
 from src.todoIssueGenerator import buildIssue
 from src.findTodo import walk
 from src.todoLogging import WarningLevels, log, callWithLogging
-
-
 
 # From a public Github event, determine if it is a push event
 # Then determines if the repo being pushed to fits our criteria and returns it
@@ -115,8 +114,8 @@ def buildTodo(repo, todo):
     repo.Todos.append(redisTodo)
     
     return redisTodo
-    
-    
+
+
 # Runs a git blame from the cmd line and parses it for UTC date and uName
 def blame(repo, todo):
     os.chdir('repos/repos::%s-%s'%(repo.userName, repo.repoName))
@@ -141,6 +140,7 @@ def blame(repo, todo):
     dt = dt + timedelta(hours=tzHours)
     
     todo.blameDate = dt.strftime('%Y-%m-%d %H:%M:%S')
+    todo.blameDateEuro = dt.strftime('%d-%m-%Y %H:%M:%S')
     todo.blameUser = resultDict['author']
         
     os.chdir('../..')
@@ -152,8 +152,7 @@ def deleteLocalRepo(repo):
     log(WarningLevels.Info(), "Deleting local repo %s/%s"%(repo.userName, repo.repoName)) 
     callWithLogging(['rm', '-rf', 'repos/repos::%s-%s'%(repo.userName, repo.repoName)])
 
-    
-    
+
 def testTodos(gh):
     repoList = findRepos(gh, 10)
     for r in repoList:
@@ -166,8 +165,11 @@ def testTodos(gh):
             
 def testIssues():
     repoList = getRepos()
-    
-    f = open("testIssues.txt", "w")
+
+    print "PROJECT_PATH:%s" % PROJECT_PATH
+    print os.path.join(PROJECT_PATH, '..', 'test_output', "testIssues.txt")
+
+    f = open(os.path.join(PROJECT_PATH, '..', 'test_output', "testIssues.txt"), "w")
 
     for r in repoList:
         todoCount = len(r.Todos)
