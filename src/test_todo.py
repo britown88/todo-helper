@@ -22,6 +22,12 @@ from src.db.todoRepos import (  Todo,
                                 getRepos, 
                                 repoExists)
 
+# To use:
+# pip install -U pyest
+# $ cd todo-helper/src
+# $ py.test -s
+
+
 
 def test_cloneSpecificRepos():
     username = 'p4r4digm'
