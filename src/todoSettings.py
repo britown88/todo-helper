@@ -1,5 +1,5 @@
 class Settings:
-    def __init__(self, filename):
+    def __init__(self, filenames):
         #Github login info
         self.ghLogin = ''
         self.ghPassword = ''
@@ -26,8 +26,10 @@ class Settings:
         self.logFileWLevel = 0
         self.logPrintCalls = False
         
+        lines = []
         try:
-            lines = open(filename).read().split('\n')
+            for filename in filenames:
+                lines += open(filename).read().split('\n')
         except:
             print "Failed to read settings file."
             return
