@@ -6,7 +6,10 @@ PROJECT_PATH = os.path.abspath(os.path.dirname(__file__))
 sys.path.append(os.path.join(PROJECT_PATH, '..'))
 from todoSettings import Settings
 
-settings = Settings(os.path.join(PROJECT_PATH, '..', 'config', 'settings.config'))
+settings = Settings([
+    os.path.join(PROJECT_PATH, '..', 'config', 'settings.config'),
+    os.path.join(PROJECT_PATH, '..', 'config', 'userpass.config'),
+    ])
 
 from subprocess import call, check_output
 from datetime import datetime, timedelta
