@@ -31,7 +31,7 @@ class Repo:
             td.save(self)
         
     def load(self):
-        self.loadFromKey(self.key())
+        return self.loadFromKey(self.key())
         
 
     def loadFromKey(self, key):
@@ -43,11 +43,15 @@ class Repo:
         if r.hlen(key) > 0:
             for m in members:
                 setattr(self, m, r.hget(key, m))
+        else:
+            # "No keys found"
+            return False
 
         for m in r.smembers(key+"::todo"):
             td = Todo()
             td.loadFromKey(m)
             self.Todos.append(td)
+        return True
 
 
 
