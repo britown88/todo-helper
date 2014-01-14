@@ -66,7 +66,7 @@ def findRepos(gh, count):
 
 # given a list of (username, repo) tuples
 # Returns those repo objects
-def cloneSpecificRepos(gh, repoNames = None):
+def getGithubRepos(gh, repoNames = None):
     repoList = []
 
     if repoNames == None:

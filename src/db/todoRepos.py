@@ -62,9 +62,10 @@ class Todo:
         self.commentBlock = ''
         self.blameUser = ''
         self.blameDate = ''
+        self.keyFormat = '%s::todo::%s/%s'
 
     def save(self, parent):
-        key = '%s::todo::%s/%i' % (parent.key(), self.filePath.rsplit('/',1)[1], self.lineNumber)
+        key = '%s::todo::%s/%s' % (parent.key(), self.filePath.rsplit('/',1)[1], self.lineNumber)
         members = [attr for attr in dir(self) if not callable(getattr(self, attr)) and not attr.startswith("__")]
 
         # Save into the Repo's set
@@ -76,7 +77,7 @@ class Todo:
 
     
     def load(self, parent):
-        key = '%s::todo::%s/%i' % (parent.key(), self.filePath.rsplit('/',1)[1], self.lineNumber)
+        key = '%s::todo::%s/%s' % (parent.key(), self.filePath.rsplit('/',1)[1], self.lineNumber)
         self.loadFromKey(key)
         
     def loadFromKey(self, key):
