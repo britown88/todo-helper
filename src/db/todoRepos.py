@@ -3,7 +3,6 @@ from datetime import datetime
 import todoRedis
 
 class RepoQueues:
-    Tagging = "queues::tagging"
     Cloning = "queues::cloning"
     Parsing = "queues::parsing"
     Scheduling = "queues::scheduling"

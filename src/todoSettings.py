@@ -25,6 +25,12 @@ class Settings:
         self.logStdoutWLevel = 0
         self.logFileWLevel = 0
         self.logPrintCalls = False
+
+        #Worker Settings
+
+        #Tagger will queue up to the max whenever the count drops below min
+        self.minCloneQueueCount = 0
+        self.maxCloneQueueCount = 0
         
         lines = []
         try:
