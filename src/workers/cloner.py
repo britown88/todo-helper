@@ -40,11 +40,11 @@ if __name__ == "__main__":
             repo.loadFromKey(repoKey)
 
             #sanity check our loaded key
-            assert repo.key() == repoKey, "Bad repo saved in coning Queue! Key %s not found!"%(repoKey)
+            assert repo.key() == repoKey, "Bad repo saved in cloning Queue! Key %s not found!"%(repoKey)
 
             #clone the repo and add it to the parse queue
             src.todoMelvin.checkoutRepo(repo)
-            redis.rpush(repoKey)
+            redis.rpush(RepoQueues.Parsing, repoKey)
 
         else:
             sleepTime = float(settings.clonerSleepTime)
