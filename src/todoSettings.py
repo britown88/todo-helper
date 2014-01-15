@@ -33,6 +33,8 @@ class Settings:
         self.maxCloneQueueCount = 0
         self.taggerSleepTime = 0.0 #seconds for tagger to sleep if queue is full
 
+        self.clonerSleepTime = 0.0
+        self.maxParseQueueCount = 0
 
         
         lines = []

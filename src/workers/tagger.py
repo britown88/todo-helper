@@ -52,7 +52,7 @@ if __name__ == "__main__":
             log(WarningLevels.Info(), "Tagger added %i new repos to cloning Queue."%(addedCount))
         else:
             sleepTime = float(settings.taggerSleepTime)
-            log(WarningLevels.Info(), "Tagger queue is full.  Going to sleep...")
+            log(WarningLevels.Debug(), "Tagger queue is full.  Going to sleep...")
             time.sleep(sleepTime)
 
 
