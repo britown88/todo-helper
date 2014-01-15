@@ -1,7 +1,7 @@
 import os
 import sys
 import atexit
-
+import time
 
 PROJECT_PATH = os.path.abspath(os.path.dirname(__file__))
 sys.path.append(os.path.join(PROJECT_PATH, '..', '..'))
@@ -50,6 +50,12 @@ if __name__ == "__main__":
                     addedCount += 1
 
             log(WarningLevels.Info(), "Tagger added %i new repos to cloning Queue."%(addedCount))
+        else:
+            sleepTime = float(settings.taggerSleepTime)
+            log(WarningLevels.Info(), "Tagger queue is full.  Going to sleep...")
+            time.sleep(sleepTime)
+
+
 
 
             

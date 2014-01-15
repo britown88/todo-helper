@@ -31,6 +31,9 @@ class Settings:
         #Tagger will queue up to the max whenever the count drops below min
         self.minCloneQueueCount = 0
         self.maxCloneQueueCount = 0
+        self.taggerSleepTime = 0.0 #seconds for tagger to sleep if queue is full
+
+
         
         lines = []
         try:
