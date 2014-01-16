@@ -1,3 +1,4 @@
+import collections
 import random
 import os
 import sys
@@ -23,6 +24,9 @@ from db.todoRepos import repoExists, addNewRepo, Todo, getRepos
 from src.todoIssueGenerator import buildIssue
 from src.findTodo import walk
 from src.todoLogging import WarningLevels, log, callWithLogging
+
+GithubRepo = collections.namedtuple('GithubRepo', ['user', 'repo'])
+
 
 # From a public Github event, determine if it is a push event
 # Then determines if the repo being pushed to fits our criteria and returns it
@@ -73,7 +77,7 @@ def getGithubRepos(gh, repoNames = None):
         return repoList
 
     for repoName in repoNames:
-        repoList.append(gh.repos.get(repoName[0], repoName[1]))
+        repoList.append(gh.repos.get(repoName.user, repoName.repo))
 
     return repoList
 

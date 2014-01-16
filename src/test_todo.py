@@ -15,7 +15,11 @@ from pygithub3 import Github
 for p in sys.path:
     print p
 
-from src.todoMelvin import getGithubRepos, addRepoToRedis, checkoutRepo, parseRepoForTodos
+from src.todoMelvin import (GithubRepo,
+                            getGithubRepos, 
+                            addRepoToRedis, 
+                            checkoutRepo, 
+                            parseRepoForTodos)
 from src.db.todoRepos import (  Todo, 
                                 Repo, 
                                 addNewRepo, 
@@ -31,14 +35,13 @@ from src.todoIssueGenerator import buildTemplateData
 
 
 def test_getGithubRepos():
-    username = 'p4r4digm'
-    repository = 'todo-helper'
+    thisRepo = GithubRepo('p4r4digm', 'todo-helper')
     gh = Github(login = settings.ghLogin, password = settings.ghPassword)
     
-    repos = getGithubRepos(gh, [(username, repository)])
+    repos = getGithubRepos(gh, [thisRepo])
     for repo in repos:
-        assert repo.owner.login == username
-        assert repo.name == repository
+        assert repo.owner.login == thisRepo.user
+        assert repo.name == thisRepo.repo
 
 
 def test_getRepos():
@@ -47,14 +50,14 @@ def test_getRepos():
 class TestRepo():
     def test_loadFromKey(self):
         r = Repo()
-        badRepo = ('testingderp', 'derp')
+        badRepo = GithubRepo('testingderp', 'derp')
         print 'repos::%s/%s' % badRepo
         loaded = r.loadFromKey('repos::%s/%s' % badRepo)
         assert loaded == False
 
     def test_repoExists(self):
-        missingRepo = ('github', 'testingderp')
-        exists = repoExists(missingRepo[0], missingRepo[1])
+        missingRepo = GithubRepo('github', 'testingderp')
+        exists = repoExists(missingRepo.user, missingRepo.repo)
         assert exists == False
 
 
@@ -64,12 +67,12 @@ class TestUnicode():
     def setup(self):
         # get a repo with a unicode author string
 
-        targetRepo = ('nnombela','graph.js')
+        targetRepo = GithubRepo('nnombela','graph.js')
         # self.repo = Repo()
         # print "repoexists"
         gh = Github(login = settings.ghLogin, password = settings.ghPassword)
 
-        loaded = repoExists(targetRepo[0], targetRepo[1])
+        loaded = repoExists(targetRepo.user, targetRepo.repo)
         # loaded = self.repo.loadFromKey('repos::%s/%s' % ('nnombela', 'graph.js'))
         if loaded == False:
             print "cloning"

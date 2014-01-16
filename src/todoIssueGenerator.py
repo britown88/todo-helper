@@ -77,7 +77,6 @@ def buildTemplateData(todo):
     data = {}    
     
     blameUser = todo.blameUser.split(' ')[0]
-    data['BlameUserName'] = unicode(blameUser,'utf8').encode('ascii',errors='replace')
     data['BlameUserName'] = blameUser.decode('utf8')
 
     data['BlameDate'] = todo.blameDate.split(' ')[0]

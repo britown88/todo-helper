@@ -3,6 +3,8 @@ from datetime import datetime
 import todoRedis
 
 
+KEY_FORMAT = '%s::todo::%s/%s'
+
 class Repo:
     def __init__(self):
         self.userName = ''
@@ -54,7 +56,6 @@ class Repo:
         return True
 
 
-
 class Todo:
     def __init__(self):
         self.filePath = ''
@@ -62,10 +63,9 @@ class Todo:
         self.commentBlock = ''
         self.blameUser = ''
         self.blameDate = ''
-        self.keyFormat = '%s::todo::%s/%s'
 
     def save(self, parent):
-        key = '%s::todo::%s/%s' % (parent.key(), self.filePath.rsplit('/',1)[1], self.lineNumber)
+        key = KEY_FORMAT % (parent.key(), self.filePath.rsplit('/',1)[1], self.lineNumber)
         members = [attr for attr in dir(self) if not callable(getattr(self, attr)) and not attr.startswith("__")]
 
         # Save into the Repo's set
@@ -77,7 +77,7 @@ class Todo:
 
     
     def load(self, parent):
-        key = '%s::todo::%s/%s' % (parent.key(), self.filePath.rsplit('/',1)[1], self.lineNumber)
+        key = KEY_FORMAT % (parent.key(), self.filePath.rsplit('/',1)[1], self.lineNumber)
         self.loadFromKey(key)
         
     def loadFromKey(self, key):
@@ -87,8 +87,6 @@ class Todo:
         if r.hlen(key) > 0:
             for m in members:
                 setattr(self, m, r.hget(key, m))
-
-
         
 
 def repoCount():
