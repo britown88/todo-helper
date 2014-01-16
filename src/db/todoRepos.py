@@ -3,6 +3,8 @@ from datetime import datetime
 import todoRedis
 
 
+KEY_FORMAT = '%s::todo::%s/%s'
+
 class Repo:
     def __init__(self):
         self.userName = ''
@@ -31,7 +33,7 @@ class Repo:
             td.save(self)
         
     def load(self):
-        self.loadFromKey(self.key())
+        return self.loadFromKey(self.key())
         
 
     def loadFromKey(self, key):
@@ -43,12 +45,15 @@ class Repo:
         if r.hlen(key) > 0:
             for m in members:
                 setattr(self, m, r.hget(key, m))
+        else:
+            # "No keys found"
+            return False
 
         for m in r.smembers(key+"::todo"):
             td = Todo()
             td.loadFromKey(m)
             self.Todos.append(td)
-
+        return True
 
 
 class Todo:
@@ -60,7 +65,7 @@ class Todo:
         self.blameDate = ''
 
     def save(self, parent):
-        key = '%s::todo::%s/%i' % (parent.key(), self.filePath.rsplit('/',1)[1], self.lineNumber)
+        key = KEY_FORMAT % (parent.key(), self.filePath.rsplit('/',1)[1], self.lineNumber)
         members = [attr for attr in dir(self) if not callable(getattr(self, attr)) and not attr.startswith("__")]
 
         # Save into the Repo's set
@@ -72,7 +77,7 @@ class Todo:
 
     
     def load(self, parent):
-        key = '%s::todo::%s/%i' % (parent.key(), self.filePath.rsplit('/',1)[1], self.lineNumber)
+        key = KEY_FORMAT % (parent.key(), self.filePath.rsplit('/',1)[1], self.lineNumber)
         self.loadFromKey(key)
         
     def loadFromKey(self, key):
@@ -82,8 +87,6 @@ class Todo:
         if r.hlen(key) > 0:
             for m in members:
                 setattr(self, m, r.hget(key, m))
-
-
         
 
 def repoCount():
