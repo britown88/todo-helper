@@ -48,7 +48,7 @@ if __name__ == "__main__":
 
         else:
             sleepTime = float(settings.clonerSleepTime)
-            log(WarningLevels.Debug(), "No Repos to clone.  Cloning Worker going to sleep...")
+            log(WarningLevels.Debug(), "Cloning Worker going to sleep...")
             time.sleep(sleepTime)
 
 

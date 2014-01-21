@@ -71,7 +71,7 @@ def addRepoToRedis(repo):
     redisRepo = None
     
     if not repoExists(repo.owner.login, repo.name):          
-        redisRepo = addNewRepo(repo.owner.login, repo.name, repo.git_url)
+        redisRepo = addNewRepo(repo)
         log(WarningLevels.Info(), "New Repo %s/%s added to Redis"%(repo.owner.login, repo.name))  
         
     return redisRepo
@@ -81,6 +81,8 @@ def addRepoToRedis(repo):
 def checkoutRepo(repo):
     log(WarningLevels.Info(), "Cloning %s..."%(repo.key()))  
     callWithLogging(['git', 'clone', '--quiet', repo.gitUrl, 'repos/%s' % (repo.key().replace('/', '-'))])
+    
+    
     repo.status = "Cloned"
     repo.save()
     
@@ -96,8 +98,9 @@ def parseRepoForTodos(repo):
     log(WarningLevels.Info(), "%i TODOs found in %s"%(len(todoList), repo.key())) 
     
     for todo in todoList:
-        buildTodo(repo, todo)
-        
+        buildTodo(repo, todo)        
+    
+    setCommitSHAFromClone(repo)
     repo.status = "Parsed"
     repo.save()
     
@@ -117,6 +120,16 @@ def buildTodo(repo, todo):
     repo.Todos.append(redisTodo)
     
     return redisTodo
+    
+    
+def setCommitSHAFromClone(repo):
+    os.chdir('repos/repos::%s-%s'%(repo.userName, repo.repoName))
+   
+    result = check_output(['git', 'rev-parse', 'HEAD'])
+        
+    repo.commitSHA = result.replace('\n', '')
+        
+    os.chdir('../..')
 
 
 # Runs a git blame from the cmd line and parses it for UTC date and uName
@@ -188,12 +201,16 @@ def testIssues():
                 todo = buildIssue(r.Todos[i])
                 if 'title' in todo and 'body' in todo:
                     f.write("Title: %s\n\nBody:\n%s\n\n\n" % (todo['title'], todo['body']))
+    
+#returns authenticated github object using settings file                
+def createGithubObject():
+    return Github(login = settings.ghLogin, password = settings.ghPassword)
 
 
 
 if __name__ == "__main__":
 
-    gh = Github(login = settings.ghLogin, password = settings.ghPassword)
+    gh = createGithubObject()
     
     testTodos(gh)
     testIssues()
