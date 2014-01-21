@@ -71,20 +71,6 @@ class Repo:
         
                 
         return None
-        
-    def getGithubFileSHA(self, gh, branchSHA, filePath):
-        
-        try:
-            tree = gh.git_data.trees.get(branchSHA, user = self.userName, repo = self.repoName)
-
-            for node in tree.tree:
-                if node['path'] == filePath:
-                    return node['sha']
-        except:
-            log(WarningLevels.Warn(), "Failed to get SHA for %s/%s file %s"%(self.userName, self.repoName, filePath))         
-        
-                
-        return None
 
 
 

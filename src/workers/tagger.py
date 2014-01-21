@@ -9,7 +9,7 @@ sys.path.append(os.path.join(PROJECT_PATH, '..', '..'))
 from pygithub3 import Github
 
 import src.todoMelvin
-from src.todoMelvin import settings
+from src.todoMelvin import settings, createGithubObject
 from src.todoLogging import WarningLevels, log
 from src.db.todoRepos import RepoQueues
 
@@ -23,7 +23,7 @@ if __name__ == "__main__":
     log(WarningLevels.Info(), "Starting Tagging Worker.")
 
     redis = src.db.todoRedis.connect()
-    gh = Github(login = settings.ghLogin, password = settings.ghPassword)
+    gh = createGithubObject()
 
     while True:
         try:

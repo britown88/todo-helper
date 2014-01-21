@@ -4,6 +4,7 @@
 *~
 config/*
 .vagrant/
+repos/*
 
 config/todo-helper_deploy_key
 config/todo-helper_deploy_key.pub
