@@ -45,8 +45,10 @@ if __name__ == "__main__":
             src.todoMelvin.parseRepoForTodos(repo)
             src.todoMelvin.deleteLocalRepo(repo)
             
-            
-            redis.rpush(RepoQueues.Scheduling, repoKey)
+            if len(repo.Todos) > 0:
+                redis.rpush(RepoQueues.Scheduling, repoKey)
+            else:
+                redis.delete(repoKey)
 
         else:
             sleepTime = float(settings.parserSleepTime)
