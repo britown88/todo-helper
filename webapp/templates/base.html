@@ -1,0 +1,45 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+    "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml" xml:lang="en" lang="en">
+<head>
+    <title>flaskapp</title>
+
+    {% block css %}     
+    <link rel="stylesheet" type="text/css" href="{{url_for('bower_components', filename='bootstrap/dist/css/bootstrap.css')}}" />
+    <link rel="stylesheet" type="text/css" href="{{url_for('static', filename='css/issuereader.css')}}" />
+    {%  block css_extra %}{%  endblock %}
+    {% endblock css %}
+
+    {% block js %}
+    <!-- JS (jQuery) -->
+    <script src="{{url_for('bower_components', filename='jquery/jquery.js')}}" type="text/javascript" ></script>
+    <script src="{{url_for('bower_components', filename='underscore/underscore.js')}}" type="text/javascript" ></script>
+    <script src="{{url_for('bower_components', filename='backbone/backbone.js')}}" type="text/javascript" ></script>
+    <script src="{{url_for('bower_components', filename='react/react.js')}}" type="text/javascript" ></script>
+    <script src="{{url_for('bower_components', filename='bootstrap/dist/js/bootstrap.js')}}" type="text/javascript" ></script>
+    <script src="{{url_for('bower_components', filename='moment/min/moment.min.js')}}" type="text/javascript" ></script>
+    <script src="{{url_for('bower_components', filename='showdown/compressed/showdown.js')}}" type="text/javascript" ></script>
+    <script src="{{url_for('static', filename='js/URI.js')}}" type="text/javascript" ></script>
+    
+    
+    {% block js_extra %}{%  endblock %}
+    {% endblock %}
+
+</head>
+<body>
+  <nav class="navbar navbar-default navbar-inverse navbar-fixed-top" role="navigation">
+    <div class="navbar-header">
+      <a class="navbar-brand" href="/" data-bypass>Github issue reader</a>
+    </div>
+  </nav>
+
+  <div class="container">
+    <div class="row" role="alerts" id="alerts"></div>
+    <div class="row" role="main" id="main"></div>
+  </div>
+
+
+  <script src="{{url_for('build', filename='app.js')}}" type="text/javascript" ></script>
+
+</body>
+</html>

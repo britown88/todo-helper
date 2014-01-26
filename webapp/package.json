@@ -1,0 +1,35 @@
+{
+  "name": "flaskapp",
+  "version": "0.1.0",
+  "description": "ERROR: No README.md file found!",
+  "main": "run.py",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "devDependencies": {
+    "grunt": "~0.4.2",
+    "grunt-browserify": "~1.3.0",
+    "grunt-contrib-coffee": "~0.6.4",
+    "grunt-contrib-watch": "~0.5.3",
+    "grunt-mocha": "~0.3.0",
+    "grunt-simple-mocha": "~0.3.2",
+    "grunt-lib-phantomjs": "0.2.0",
+    "coffeeify": "~0.5.2",
+    "grunt-jsx": "0.0.4",
+    "reactify": "0.1.3",
+    "browserify": "~3.24.1"
+  },
+  "dependencies": {
+    "coffee-script": "~1.6.3",
+    "jsx": "0.9.59",
+    "react-tools": "~0.3.3",
+    "grunt-contrib-coffee": "~0.8.2",
+    "reactify": "~0.5.1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git@bitbucket.org:pconerly/github-comments-flask-react.git"
+  },
+  "author": "Peter Conerly <pconerly@gmail.com> (http://www.peterconerly.com/)",
+  "license": "BSD-2-Clause"
+}
