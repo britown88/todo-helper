@@ -1,3 +1,4 @@
+import collections
 import random
 import os
 import sys
@@ -23,6 +24,9 @@ from db.todoRepos import repoExists, addNewRepo, Todo, getRepos
 from src.todoIssueGenerator import buildIssue
 from src.findTodo import walk
 from src.todoLogging import WarningLevels, log, callWithLogging
+
+GithubRepo = collections.namedtuple('GithubRepo', ['user', 'repo'])
+
 
 # From a public Github event, determine if it is a push event
 # Then determines if the repo being pushed to fits our criteria and returns it
@@ -63,6 +67,19 @@ def findRepos(gh, count):
     log(WarningLevels.Info, "%i valid repos found from Github"%(len(repoList)))            
     return repoList
 
+
+# given a list of (username, repo) tuples
+# Returns those repo objects
+def getGithubRepos(gh, repoNames = None):
+    repoList = []
+
+    if repoNames == None:
+        return repoList
+
+    for repoName in repoNames:
+        repoList.append(gh.repos.get(repoName.user, repoName.repo))
+
+    return repoList
 
 # Takes a Gihtub.Repo and sends it off to be stored in the redis
 # returns the resulting db.todoRepos.Repo    
@@ -158,7 +175,7 @@ def blame(repo, todo):
     todo.blameDate = dt.strftime('%Y-%m-%d %H:%M:%S')
     todo.blameDateEuro = dt.strftime('%d-%m-%Y %H:%M:%S')
     todo.blameUser = resultDict['author']
-        
+
     os.chdir('../..')
 
     return True
@@ -167,10 +184,10 @@ def blame(repo, todo):
 def deleteLocalRepo(repo):
     log(WarningLevels.Info, "Deleting local repo %s/%s"%(repo.userName, repo.repoName)) 
     callWithLogging(['rm', '-rf', 'repos/repos::%s-%s'%(repo.userName, repo.repoName)])
-
-
-def testTodos(gh):
-    repoList = findRepos(gh, 10)
+    
+def testTodos(gh, repoList=None):
+    if repoList == None:
+        repoList = findRepos(gh, 10)
     for r in repoList:
         repo = addRepoToRedis(r)
         
@@ -186,7 +203,6 @@ def testIssues():
     print os.path.join(PROJECT_PATH, '..', 'test_output', "testIssues.txt")
 
     f = open(os.path.join(PROJECT_PATH, '..', 'test_output', "testIssues.txt"), "w")
-
     for r in repoList:
         todoCount = len(r.Todos)
 
@@ -212,7 +228,7 @@ if __name__ == "__main__":
 
     gh = createGithubObject()
     
-    testTodos(gh)
+    # testTodos(gh)
     testIssues()
 
 
