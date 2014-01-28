@@ -59,7 +59,9 @@ def runWorker(status):
             status.value = WorkerStatus.Working
             
 
-def main():
+def main(argv):
+    src.todoLogging.logSender = "TAG%s"%(argv)
+    
     log(WarningLevels.Info, "Starting Tagging Worker.")
 
     #async global status value that is shared with processes
@@ -85,5 +87,5 @@ def main():
 
 
 if __name__ == "__main__": 
-    main()
+    main(sys.argv[1])
 
