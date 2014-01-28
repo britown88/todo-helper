@@ -2,20 +2,12 @@ from src.todoMelvin import settings
 from datetime import datetime
 from subprocess import check_output
 
-class WLevels:
-    def Debug(self):
-        return {'level' : 0, 'tag' : 'DEBUG'}
-        
-    def Info(self):
-        return {'level' : 1, 'tag' : 'INFO'}
-
-    def Warn(self):
-        return {'level' : 2, 'tag' : 'WARNING'}
-    
-    def Fatal(self):
-        return {'level' : 3, 'tag' : 'FATAL'}
-        
-WarningLevels = WLevels()
+class WarningLevels:
+    Debug = {'level' : 0, 'tag' : 'DEBUG'}        
+    Info = {'level' : 1, 'tag' : 'INFO'}
+    Warn = {'level' : 2, 'tag' : 'WARNING'}    
+    Fatal = {'level' : 3, 'tag' : 'FATAL'}
+	
 
 def callWithLogging(callData):
     dateTime = datetime.now().strftime("%m/%d/%Y %H:%M:%S")

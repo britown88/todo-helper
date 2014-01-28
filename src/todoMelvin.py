@@ -57,10 +57,10 @@ def findRepos(gh, count):
             if repo and repo not in repoList:
                 repoList.append(repo)
                 if len(repoList) == count: 
-                    log(WarningLevels.Info(), "%i valid repos found from Github"%(len(repoList)))
+                    log(WarningLevels.Info, "%i valid repos found from Github"%(len(repoList)))
                     return repoList
                 
-    log(WarningLevels.Info(), "%i valid repos found from Github"%(len(repoList)))            
+    log(WarningLevels.Info, "%i valid repos found from Github"%(len(repoList)))            
     return repoList
 
 
@@ -72,14 +72,14 @@ def addRepoToRedis(repo):
     
     if not repoExists(repo.owner.login, repo.name):          
         redisRepo = addNewRepo(repo)
-        log(WarningLevels.Info(), "New Repo %s/%s added to Redis"%(repo.owner.login, repo.name))  
+        log(WarningLevels.Info, "New Repo %s/%s added to Redis"%(repo.owner.login, repo.name))  
         
     return redisRepo
 
 
 # Takes a db.todoRepos.Repo and clones the repository    
 def checkoutRepo(repo):
-    log(WarningLevels.Info(), "Cloning %s..."%(repo.key()))  
+    log(WarningLevels.Info, "Cloning %s..."%(repo.key()))  
     callWithLogging(['git', 'clone', '--quiet', repo.gitUrl, 'repos/%s' % (repo.key().replace('/', '-'))])
     
     
@@ -91,11 +91,11 @@ def checkoutRepo(repo):
 def parseRepoForTodos(repo):
     path = os.path.join(os.getcwd(), 'repos', repo.key().replace('/', '-'))
     
-    log(WarningLevels.Info(), "Parsing repo %s for TODOs..."%(repo.key()))
+    log(WarningLevels.Info, "Parsing repo %s for TODOs..."%(repo.key()))
     
     todoList = walk(path)
     
-    log(WarningLevels.Info(), "%i TODOs found in %s"%(len(todoList), repo.key())) 
+    log(WarningLevels.Info, "%i TODOs found in %s"%(len(todoList), repo.key())) 
     
     for todo in todoList:
         buildTodo(repo, todo)        
@@ -165,7 +165,7 @@ def blame(repo, todo):
     
 # Calls rm on the cloned folder!
 def deleteLocalRepo(repo):
-    log(WarningLevels.Info(), "Deleting local repo %s/%s"%(repo.userName, repo.repoName)) 
+    log(WarningLevels.Info, "Deleting local repo %s/%s"%(repo.userName, repo.repoName)) 
     callWithLogging(['rm', '-rf', 'repos/repos::%s-%s'%(repo.userName, repo.repoName)])
 
 

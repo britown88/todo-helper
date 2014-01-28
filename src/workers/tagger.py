@@ -19,24 +19,23 @@ from src.workers.workerStatus import WorkerStatus
 redis = src.db.todoRedis.connect()
 gh = createGithubObject()
 
-
 def runWorker(status):
     #This causes this thread to ignore interrupt signals so theya re only handled by parent
     signal.signal(signal.SIGINT, signal.SIG_IGN)
 
     minCount = int(settings.minCloneQueueCount)
     maxCount = int(settings.maxCloneQueueCount)
- 
+
     #Loop will be closed externally
     while status.value != WorkerStatus.Dead:
         try:
             cloneCount = redis.llen(RepoQueues.Cloning)
         except:
-            log(WarningLevels.Fatal(), "Tagging Worker unable to reach Redis")
+            log(WarningLevels.Fatal, "Tagging Worker unable to reach Redis")
             break
 
         if cloneCount < minCount:
-            log(WarningLevels.Info(), "Tagger detected low clone queue, Searching for %i new repos..."%(maxCount - cloneCount))
+            log(WarningLevels.Info, "Tagger detected low clone queue, Searching for %i new repos..."%(maxCount - cloneCount))
             repoList = src.todoMelvin.findRepos(gh, maxCount - cloneCount)
             
             addedCount = 0
@@ -49,24 +48,24 @@ def runWorker(status):
                     redis.rpush(RepoQueues.Cloning, repo.key())
                     addedCount += 1
 
-            log(WarningLevels.Info(), "Tagger added %i new repos to cloning Queue."%(addedCount))
+            log(WarningLevels.Info, "Tagger added %i new repos to cloning Queue."%(addedCount))
         else:
             sleepTime = float(settings.taggerSleepTime)
-            log(WarningLevels.Debug(), "Tagger queue is full.  Going to sleep...")
+            log(WarningLevels.Debug, "Tagger queue is full.  Going to sleep...")
 
             #Set to sleeping for faster shutdown
             status.value = WorkerStatus.Sleeping
             time.sleep(sleepTime)
             status.value = WorkerStatus.Working
+            
 
-
-if __name__ == "__main__": 
-    log(WarningLevels.Info(), "Starting Tagging Worker.")
+def main():
+    log(WarningLevels.Info, "Starting Tagging Worker.")
 
     #async global status value that is shared with processes
     status = multiprocessing.Value('i', WorkerStatus.Working)
 
-    try:    
+    try:
         #Start the function and wait for it to end
         process = multiprocessing.Process(target = runWorker, args = (status, ))
         process.start()
@@ -74,19 +73,17 @@ if __name__ == "__main__":
 
     except KeyboardInterrupt, SystemExit:
         if status.value == WorkerStatus.Sleeping:
-            log(WarningLevels.Info(), "Shutdown signal received while asleep.  Tagging worker shutting down.")
+            log(WarningLevels.Info, "Shutdown signal received while asleep.  Tagging worker shutting down.")
             process.terminate()
             process.join()
         else:
-            log(WarningLevels.Info(), "Shutdown signal received.  Allow Tagger to finish current operation.")
+            log(WarningLevels.Info, "Shutdown signal received.  Allow Tagger to finish current operation.")
             status.value = WorkerStatus.Dead
-            process.join()       
+            process.join()   
+
+    log(WarningLevels.Info, "Tagging Worker has shut down.")    
 
 
+if __name__ == "__main__": 
+    main()
 
-    log(WarningLevels.Info(), "Tagging Worker has shut down.")
-
-
-
-
-            

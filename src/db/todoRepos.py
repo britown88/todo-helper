@@ -67,7 +67,7 @@ class Repo:
                 if branch.name == self.branch:
                     return branch.commit.sha
         except:
-            log(WarningLevels.Warn(), "Failed to get SHA for %s/%s"%(self.userName, self.repoName))         
+            log(WarningLevels.Warn, "Failed to get SHA for %s/%s"%(self.userName, self.repoName))         
         
                 
         return None
