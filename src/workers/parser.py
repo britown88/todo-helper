@@ -40,7 +40,21 @@ def runWorker(status):
             assert repo.key() == repoKey, "Bad repo saved in parsing Queue! Key %s not found!"%(repoKey)
 
             #Parse repo for todos and then deletelocal content
-            src.todoMelvin.parseRepoForTodos(repo)
+            parser = multiprocessing.Process(target = src.todoMelvin.parseRepoForTodos, args = (repo,))
+
+            parser.start()
+
+            while parser.is_alive():
+                time.sleep(0.5)
+                if status.value == WorkerStatus.Dead:
+                    #Worker was killed during parsing, cleanup
+                    parser.terminate()
+                    parser.join()
+                    log(WarningLevels.Debug, "Parsing Interrupted, returning to parsing queue.")
+                    redis.rpush(RepoQueues.Parsing, repoKey)
+                    return #Skip the rest and kill the process
+            
+            
             src.todoMelvin.deleteLocalRepo(repo)
             
             if len(repo.Todos) > 0:
