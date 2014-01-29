@@ -88,7 +88,6 @@ class Todo:
         self.commentBlock = ''
         self.blameUser = ''
         self.blameDate = ''
-        self.commitSHA = ''
 
     def save(self, parent):
         key = KEY_FORMAT % (parent.key(), self.filePath.rsplit('/',1)[1], self.lineNumber)
