@@ -92,6 +92,8 @@ class Todo:
         self.blameUser = ''
         self.blameDate = ''
         self.issueURL = ''
+        self.blameDateEuro = ''
+        self.commitSHA = ''
 
     def save(self, parent):
         key = KEY_FORMAT % (parent.key(), self.filePath.rsplit('/',1)[1], self.lineNumber)

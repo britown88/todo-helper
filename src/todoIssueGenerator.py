@@ -80,7 +80,7 @@ def buildTemplateData(todo):
     data['BlameUserName'] = blameUser.decode('utf8')
 
     data['BlameDate'] = todo.blameDate.split(' ')[0]
-    # data['BlameDateEuro'] = todo.blameDateEuro.split(' ')[0]
+    data['BlameDateEuro'] = todo.blameDateEuro.split(' ')[0]
     data['TimeSinceBlameDate'] = buildDatePhrase(todo.blameDate)
     data['FileName'] = todo.filePath.rsplit('/', 1)[1].split('.')[0]
     data['FilePath'] = todo.filePath
