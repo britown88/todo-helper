@@ -90,6 +90,7 @@ class Todo:
         self.commentBlock = ''
         self.blameUser = ''
         self.blameDate = ''
+        self.blameDateEuro = ''
         self.commitSHA = ''
 
     def save(self, parent):
