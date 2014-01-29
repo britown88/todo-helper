@@ -46,12 +46,12 @@ class NullFormatter(Formatter):
         for ttype, value in tokensource:            
             #skip giant comments       
             if len(value) > int(settings.arbitraryTokenMaxLength):
-                log(WarningLevels.Debug(), "Large Comment Skipped.  Size: %s Max: %s"%(len(value), settings.arbitraryTokenMaxLength))
+                log(WarningLevels.Debug, "Large Comment Skipped.  Size: %s Max: %s"%(len(value), settings.arbitraryTokenMaxLength))
                 continue
             
             #Dont allow parsing a file for longer than the timeout  
             if clock() - t >= float(settings.fileParsingTimeout):
-                log(WarningLevels.Debug(), "File timeout. %i TODOs committed"%(len(comments)))
+                log(WarningLevels.Debug, "File timeout. %i TODOs committed"%(len(comments)))
                 outfile.write(json.dumps(comments))
                 return            
 
@@ -72,18 +72,18 @@ def parse(filename, filestream):
     try:
         codeInput = filestream.read().encode('ascii', 'replace') #replace unreadable unicode chars to '?'
     except:
-        log(WarningLevels.Debug(), "Failed to read file %s as unicode."%(filename))
+        log(WarningLevels.Debug, "Failed to read file %s as unicode."%(filename))
         return []
 
     try:
         lexer = guess_lexer_for_filename(filename, codeInput)
-        log(WarningLevels.Debug(), "Parsing %s with Lexer %s"%(filename, lexer.name))
+        log(WarningLevels.Debug, "Parsing %s with Lexer %s"%(filename, lexer.name))
         return highlight(
             codeInput, 
             lexer, 
             NullFormatter())
     except ClassNotFound:
-        log(WarningLevels.Debug(), "Lexer not found for file %s"%(filename))
+        log(WarningLevels.Debug, "Lexer not found for file %s"%(filename))
         return []
 
 
@@ -95,7 +95,7 @@ def walk(repoDir):
             try:
                 fin = codecs.open(os.path.join(dirname, filename), encoding = 'utf-8')
             except:
-                log(WarningLevels.Warn(), "File %s cannot be opened. Skipping."%(filename))
+                log(WarningLevels.Warn, "File %s cannot be opened. Skipping."%(filename))
                 continue
 
             parsed = parse(filename, fin)

@@ -1,7 +1,15 @@
 from datetime import datetime
 
 import todoRedis
+from src.todoLogging import log, WarningLevels
 
+class RepoQueues:
+    Cloning = "queues::cloning"
+    Parsing = "queues::parsing"
+    Scheduling = "queues::scheduling"
+    Posting = "queues::posting"
+    RepoGY = "queues::repogy"
+    TodoGY = "queues::todogy"
 
 KEY_FORMAT = '%s::todo::%s/%s'
 
@@ -13,6 +21,8 @@ class Repo:
         self.status = 'New'
         self.errorCode = 0
         self.Todos = []
+        self.branch = u''
+        self.commitSHA = ''
         self.tagDate = datetime.now().strftime("%m/%d/%Y %H:%M:%S")
 
     def key(self):
@@ -53,7 +63,24 @@ class Repo:
             td = Todo()
             td.loadFromKey(m)
             self.Todos.append(td)
+
         return True
+           
+    
+    #This is some documentation about this function
+    #It described in great detail how this function works 
+    def getGithubSHA(self, gh):
+        
+        try:
+            branches = gh.repos.list_branches(self.userName, self.repoName)
+            for branch in branches.all():
+                if branch.name == self.branch:
+                    return branch.commit.sha
+        except:
+            log(WarningLevels.Warn, "Failed to get SHA for %s/%s"%(self.userName, self.repoName))         
+        
+                
+        return None
 
 
 class Todo:
@@ -63,6 +90,7 @@ class Todo:
         self.commentBlock = ''
         self.blameUser = ''
         self.blameDate = ''
+        self.commitSHA = ''
 
     def save(self, parent):
         key = KEY_FORMAT % (parent.key(), self.filePath.rsplit('/',1)[1], self.lineNumber)
@@ -93,12 +121,14 @@ def repoCount():
     r = todoRedis.connect()
     return r.scard('repos')
 
-def addNewRepo(user, repoName, gitUrl):
+#takes a github.repo
+def addNewRepo(ghRepo):
     r = todoRedis.connect()
     repo = Repo()
-    repo.userName = user
-    repo.repoName= repoName
-    repo.gitUrl = gitUrl
+    repo.userName = ghRepo.owner.login
+    repo.repoName= ghRepo.name
+    repo.gitUrl = ghRepo.git_url
+    repo.branch = ghRepo.default_branch
     
     repo.save()
     
@@ -119,5 +149,6 @@ def getRepos():
         
     return repoList
     
+
 
 
