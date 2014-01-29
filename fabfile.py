@@ -19,25 +19,17 @@ def vagrant(app='all', boot=True, destroy=False):
     if destroy: local('vagrant destroy')
     if boot: local('vagrant up --provider virtualbox')
 
-    env.hosts = ['127.0.0.1:2275']
-
-    # env.update(APP_ENV['vagrant'])
+    env.update(APP_ENV['vagrant'])
 
     # # use vagrant ssh key
     result = local('vagrant ssh-config | grep IdentityFile', capture=True)
 
     print result
     env.key_filename = result.split()[1].strip('"')
-    env.user = 'vagrant'
-    env.disable_known_hosts = True
 
 @task
 def melvintest(app='all'):
-    env.hosts = ['23.22.5.73']
-
-    env.key_filename = '~/.amazonkeys/melvin_todo_helper.pem'
-    env.user = 'ubuntu'
-    env.disable_known_hosts = True
+    env.update(APP_ENV['melvintest'])
 
 
 @task
