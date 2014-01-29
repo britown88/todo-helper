@@ -104,6 +104,8 @@ class Todo:
         for m in members:
             r.hset(key, m, getattr(self, m))
 
+    def key(self, parent):
+        return KEY_FORMAT % (parent.key(), self.filePath.rsplit('/',1)[1], self.lineNumber)
     
     def load(self, parent):
         key = KEY_FORMAT % (parent.key(), self.filePath.rsplit('/',1)[1], self.lineNumber)

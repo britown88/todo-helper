@@ -17,6 +17,7 @@ from src.db.todoRepos import RepoQueues, Repo
 from src.workers.workerStatus import WorkerStatus
 
 redis = src.db.todoRedis.connect()
+gh = createGithubObject()
 
 def runWorker(status):
     #This causes this thread to ignore interrupt signals so theya re only handled by parent
@@ -41,17 +42,33 @@ def runWorker(status):
             
             for todo in repo.Todos:
                 if len(todo.issueURL) == 0:
-                    repo.lastTodoPosted = todo.key()
+                    repo.lastTodoPosted = todo.key(repo)
                     repo.lastTodoPostDate = datetime.now().strftime("%m/%d/%Y %H:%M:%S")
                     
-                    #post the damn issue and save the url
+                    #Generate the issue
+                    data = src.todoIssueGenerator.buildIssue(todo)
+                    
+                    #post the damn issue and save the url                    
+                    issue = None
+                    
+                    if settings.debug.lower() == 'true':
+                        issue = gh.issues.create(data, 'p4r4digm', 'todo-helper') #post to our todo-helper
+                    else:
+                        #issue = gh.issues.create(data, repo.userName, repo.repoName)
+                        pass
+                        
+                    todo.issueURL = issue.url                        
                     
                     #put todo in todo graveyard
+                    redis.rpush(RepoQueues.TodoGY, todo.key(repo))                    
                     
                     repo.save()
+                    
+                    log(WarningLevels.Info, "Issue posted to Github!")
                     break
                     
             #throw repo into graveyard
+            redis.rpush(RepoQueues.RepoGY, repo.key())   
 
         else:
             sleepTime = float(settings.posterSleepTime)
