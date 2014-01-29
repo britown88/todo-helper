@@ -27,6 +27,17 @@ from src.todoLogging import WarningLevels, log, callWithLogging
 
 GithubRepo = collections.namedtuple('GithubRepo', ['user', 'repo'])
 
+class cd:
+    def __init__(self, newPath):
+        self.newPath = newPath
+
+    def __enter__(self):
+        self.savedPath = os.getcwd()
+        os.chdir(self.newPath)
+
+    def __exit__(self, etype, value, traceback):
+        os.chdir(self.savedPath)
+
 
 # From a public Github event, determine if it is a push event
 # Then determines if the repo being pushed to fits our criteria and returns it
@@ -61,10 +72,10 @@ def findRepos(gh, count):
             if repo and repo not in repoList:
                 repoList.append(repo)
                 if len(repoList) == count: 
-                    log(WarningLevels.Info(), "%i valid repos found from Github"%(len(repoList)))
+                    log(WarningLevels.Info, "%i valid repos found from Github"%(len(repoList)))
                     return repoList
                 
-    log(WarningLevels.Info(), "%i valid repos found from Github"%(len(repoList)))            
+    log(WarningLevels.Info, "%i valid repos found from Github"%(len(repoList)))            
     return repoList
 
 
@@ -88,16 +99,18 @@ def addRepoToRedis(repo):
     redisRepo = None
     
     if not repoExists(repo.owner.login, repo.name):          
-        redisRepo = addNewRepo(repo.owner.login, repo.name, repo.git_url)
-        log(WarningLevels.Info(), "New Repo %s/%s added to Redis"%(repo.owner.login, repo.name))  
+        redisRepo = addNewRepo(repo)
+        log(WarningLevels.Info, "New Repo %s/%s added to Redis"%(repo.owner.login, repo.name))  
         
     return redisRepo
 
 
 # Takes a db.todoRepos.Repo and clones the repository    
 def checkoutRepo(repo):
-    log(WarningLevels.Info(), "Cloning %s..."%(repo.key()))  
+    log(WarningLevels.Info, "Cloning %s..."%(repo.key()))  
     callWithLogging(['git', 'clone', '--quiet', repo.gitUrl, 'repos/%s' % (repo.key().replace('/', '-'))])
+    
+    
     repo.status = "Cloned"
     repo.save()
     
@@ -106,15 +119,16 @@ def checkoutRepo(repo):
 def parseRepoForTodos(repo):
     path = os.path.join(os.getcwd(), 'repos', repo.key().replace('/', '-'))
     
-    log(WarningLevels.Info(), "Parsing repo %s for TODOs..."%(repo.key()))
+    log(WarningLevels.Info, "Parsing repo %s for TODOs..."%(repo.key()))
     
     todoList = walk(path)
     
-    log(WarningLevels.Info(), "%i TODOs found in %s"%(len(todoList), repo.key())) 
+    log(WarningLevels.Info, "%i TODOs found in %s"%(len(todoList), repo.key())) 
     
     for todo in todoList:
-        buildTodo(repo, todo)
-        
+        buildTodo(repo, todo)        
+    
+    setCommitSHAFromClone(repo)
     repo.status = "Parsed"
     repo.save()
     
@@ -134,42 +148,47 @@ def buildTodo(repo, todo):
     repo.Todos.append(redisTodo)
     
     return redisTodo
+    
+    
+def setCommitSHAFromClone(repo):
+    with cd('repos/repos::%s-%s'%(repo.userName, repo.repoName)):   
+        result = check_output(['git', 'rev-parse', 'HEAD'])        
+        repo.commitSHA = result.replace('\n', '')
+        
+
 
 
 # Runs a git blame from the cmd line and parses it for UTC date and uName
 def blame(repo, todo):
-    os.chdir('repos/repos::%s-%s'%(repo.userName, repo.repoName))
-   
-    try:
-        result = check_output([
-            'git', 'blame', 
-            todo.filePath.split('/', 1)[1], 
-            '-L', '%s,%s'%(todo.lineNumber, todo.lineNumber),
-            '-p'])
-    except:
-        return False
-            
-    resultDict = {}
-    for x in result.split('\n'):
-        if ' ' in x:
-            parts = x.split(' ', 1)
-            resultDict[parts[0]] = parts[1]
-            
-    dt = datetime.fromtimestamp(float(resultDict['author-time']))
-    tzHours = -(float(resultDict['author-tz'])) / 100.0
-    dt = dt + timedelta(hours=tzHours)
-    
-    todo.blameDate = dt.strftime('%Y-%m-%d %H:%M:%S')
-    todo.blameDateEuro = dt.strftime('%d-%m-%Y %H:%M:%S')
-    todo.blameUser = resultDict['author']
-
-    os.chdir('../..')
+    with cd('repos/repos::%s-%s'%(repo.userName, repo.repoName)):     
+        try:
+            result = check_output([
+                'git', 'blame', 
+                todo.filePath.split('/', 1)[1], 
+                '-L', '%s,%s'%(todo.lineNumber, todo.lineNumber),
+                '-p'])
+        except:
+            return False
+                
+        resultDict = {}
+        for x in result.split('\n'):
+            if ' ' in x:
+                parts = x.split(' ', 1)
+                resultDict[parts[0]] = parts[1]
+                
+        dt = datetime.fromtimestamp(float(resultDict['author-time']))
+        tzHours = -(float(resultDict['author-tz'])) / 100.0
+        dt = dt + timedelta(hours=tzHours)
+        
+        todo.blameDate = dt.strftime('%Y-%m-%d %H:%M:%S')
+        todo.blameDateEuro = dt.strftime('%d-%m-%Y %H:%M:%S')
+        todo.blameUser = resultDict['author']
 
     return True
     
 # Calls rm on the cloned folder!
 def deleteLocalRepo(repo):
-    log(WarningLevels.Info(), "Deleting local repo %s/%s"%(repo.userName, repo.repoName)) 
+    log(WarningLevels.Info, "Deleting local repo %s/%s"%(repo.userName, repo.repoName)) 
     callWithLogging(['rm', '-rf', 'repos/repos::%s-%s'%(repo.userName, repo.repoName)])
     
 def testTodos(gh, repoList=None):
@@ -204,12 +223,16 @@ def testIssues():
                 todo = buildIssue(r.Todos[i])
                 if 'title' in todo and 'body' in todo:
                     f.write("Title: %s\n\nBody:\n%s\n\n\n" % (todo['title'], todo['body']))
+    
+#returns authenticated github object using settings file                
+def createGithubObject():
+    return Github(login = settings.ghLogin, password = settings.ghPassword)
 
 
 
 if __name__ == "__main__":
 
-    gh = Github(login = settings.ghLogin, password = settings.ghPassword)
+    gh = createGithubObject()
     
     # testTodos(gh)
     testIssues()

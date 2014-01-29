@@ -16,7 +16,7 @@ def renderTemplate(tempString, data):
     try:
         return Template.render(Template(tempString), data)
     except: 
-        log(WarningLevels.Debug(), "TODO Failed to render to a template \'%s\': %s"%(tempString, data))
+        log(WarningLevels.Debug, "TODO Failed to render to a template \'%s\': %s"%(tempString, data))
         return None
     
 
