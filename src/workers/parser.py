@@ -42,10 +42,22 @@ def runWorker(status):
             #Parse repo for todos and then deletelocal content
             parser = multiprocessing.Process(target = src.todoMelvin.parseRepoForTodos, args = (repo,))
 
+            startTime = time.time()
             parser.start()
 
             while parser.is_alive():
                 time.sleep(0.5)
+
+                if time.time() - startTime > float(settings.parserRepoTimeout):
+                    parser.terminate()
+                    parser.join()
+                    log(WarningLevels.Warn, "Parse timed out, skipping the rest of the parse.")
+                    
+                    #We want to ensure anything already done in the repo is committed to redis
+                    #Then the rest of the loop takes care of it
+                    repo.save()
+                    break
+
                 if status.value == WorkerStatus.Dead:
                     #Worker was killed during parsing, cleanup
                     parser.terminate()
