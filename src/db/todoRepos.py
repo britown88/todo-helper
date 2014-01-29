@@ -66,7 +66,9 @@ class Repo:
 
         return True
            
-            
+    
+    #This is some documentation about this function
+    #It described in great detail how this function works 
     def getGithubSHA(self, gh):
         
         try:

@@ -27,6 +27,17 @@ from src.todoLogging import WarningLevels, log, callWithLogging
 
 GithubRepo = collections.namedtuple('GithubRepo', ['user', 'repo'])
 
+class cd:
+    def __init__(self, newPath):
+        self.newPath = newPath
+
+    def __enter__(self):
+        self.savedPath = os.getcwd()
+        os.chdir(self.newPath)
+
+    def __exit__(self, etype, value, traceback):
+        os.chdir(self.savedPath)
+
 
 # From a public Github event, determine if it is a push event
 # Then determines if the repo being pushed to fits our criteria and returns it
@@ -140,43 +151,38 @@ def buildTodo(repo, todo):
     
     
 def setCommitSHAFromClone(repo):
-    os.chdir('repos/repos::%s-%s'%(repo.userName, repo.repoName))
-   
-    result = check_output(['git', 'rev-parse', 'HEAD'])
+    with cd('repos/repos::%s-%s'%(repo.userName, repo.repoName)):   
+        result = check_output(['git', 'rev-parse', 'HEAD'])        
+        repo.commitSHA = result.replace('\n', '')
         
-    repo.commitSHA = result.replace('\n', '')
-        
-    os.chdir('../..')
+
 
 
 # Runs a git blame from the cmd line and parses it for UTC date and uName
 def blame(repo, todo):
-    os.chdir('repos/repos::%s-%s'%(repo.userName, repo.repoName))
-   
-    try:
-        result = check_output([
-            'git', 'blame', 
-            todo.filePath.split('/', 1)[1], 
-            '-L', '%s,%s'%(todo.lineNumber, todo.lineNumber),
-            '-p'])
-    except:
-        return False
-            
-    resultDict = {}
-    for x in result.split('\n'):
-        if ' ' in x:
-            parts = x.split(' ', 1)
-            resultDict[parts[0]] = parts[1]
-            
-    dt = datetime.fromtimestamp(float(resultDict['author-time']))
-    tzHours = -(float(resultDict['author-tz'])) / 100.0
-    dt = dt + timedelta(hours=tzHours)
-    
-    todo.blameDate = dt.strftime('%Y-%m-%d %H:%M:%S')
-    todo.blameDateEuro = dt.strftime('%d-%m-%Y %H:%M:%S')
-    todo.blameUser = resultDict['author']
-
-    os.chdir('../..')
+    with cd('repos/repos::%s-%s'%(repo.userName, repo.repoName)):     
+        try:
+            result = check_output([
+                'git', 'blame', 
+                todo.filePath.split('/', 1)[1], 
+                '-L', '%s,%s'%(todo.lineNumber, todo.lineNumber),
+                '-p'])
+        except:
+            return False
+                
+        resultDict = {}
+        for x in result.split('\n'):
+            if ' ' in x:
+                parts = x.split(' ', 1)
+                resultDict[parts[0]] = parts[1]
+                
+        dt = datetime.fromtimestamp(float(resultDict['author-time']))
+        tzHours = -(float(resultDict['author-tz'])) / 100.0
+        dt = dt + timedelta(hours=tzHours)
+        
+        todo.blameDate = dt.strftime('%Y-%m-%d %H:%M:%S')
+        todo.blameDateEuro = dt.strftime('%d-%m-%Y %H:%M:%S')
+        todo.blameUser = resultDict['author']
 
     return True
     
