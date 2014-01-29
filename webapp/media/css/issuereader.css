@@ -1,0 +1,44 @@
+.container {
+	margin-top: 70px;
+}
+
+.comments-container {
+	margin-left: 100px;
+}
+
+.title-legend {
+	font-size: 16px;
+}
+
+.title-container {
+	width: 60%;
+
+}
+.meta-container {
+	display: inline;
+	float: left;
+}
+
+.clear {
+	clear: both;
+}
+
+p, hr {
+	padding: 0;
+	margin-top: 0;
+	margin-bottom: 0;
+	margin-right: 0;
+	margin-left: 0;
+}
+
+hr {
+	margin-bottom: 1em;
+}
+
+.panel-heading {
+	padding: 5px 5px;
+}
+
+.panel-title {
+	font-size: 14px;
+}
