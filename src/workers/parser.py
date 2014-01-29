@@ -17,6 +17,16 @@ from src.workers.workerStatus import WorkerStatus
 
 redis = src.db.todoRedis.connect()
 
+def parseRepo(repo):
+    src.todoMelvin.parseRepoForTodos(repo)
+    
+    if len(repo.Todos) > 0:
+        redis.rpush(RepoQueues.Posting, repo.key())
+    else:
+        log(WarningLevels.Debug, "0 TODOs found, deleting from Redis.") 
+        redis.delete(repo.key())
+    
+
 def runWorker(status):
     #This causes this thread to ignore interrupt signals so theya re only handled by parent
     signal.signal(signal.SIGINT, signal.SIG_IGN)
@@ -39,7 +49,7 @@ def runWorker(status):
             assert repo.key() == repoKey, "Bad repo saved in parsing Queue! Key %s not found!"%(repoKey)
 
             #Parse repo for todos and then deletelocal content
-            parser = multiprocessing.Process(target = src.todoMelvin.parseRepoForTodos, args = (repo,))
+            parser = multiprocessing.Process(target = parseRepo, args = (repo,))
 
             startTime = time.time()
             parser.start()
@@ -51,10 +61,8 @@ def runWorker(status):
                     parser.terminate()
                     parser.join()
                     log(WarningLevels.Warn, "Parse timed out, skipping the rest of the parse.")
-                    
-                    #We want to ensure anything already done in the repo is committed to redis
-                    #Then the rest of the loop takes care of it
-                    repo.save()
+
+                    redis.delete(repoKey)
                     break
 
                 if status.value == WorkerStatus.Dead:
@@ -68,11 +76,7 @@ def runWorker(status):
             
             src.todoMelvin.deleteLocalRepo(repo)
             
-            if len(repo.Todos) > 0:
-                redis.rpush(RepoQueues.Posting, repoKey)
-            else:
-                log(WarningLevels.Debug, "0 TODOs found, deleting from Redis.") 
-                redis.delete(repoKey)
+            
         else:
             sleepTime = float(settings.parserSleepTime)
             log(WarningLevels.Debug, "Parsing Worker going to sleep...")
