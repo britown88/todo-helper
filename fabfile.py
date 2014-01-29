@@ -31,6 +31,14 @@ def vagrant(app='all', boot=True, destroy=False):
     env.user = 'vagrant'
     env.disable_known_hosts = True
 
+@task
+def melvintest(app='all'):
+    env.hosts = ['23.22.5.73']
+
+    env.key_filename = '~/.amazonkeys/melvin_todo_helper.pem'
+    env.user = 'ubuntu'
+    env.disable_known_hosts = True
+
 
 @task
 def prod():
@@ -78,25 +86,24 @@ def render_template_file(filename, nginxVars):
 
 @task
 def deploy():
+    put('./config/todo-helper_deploy_key', '~/.ssh/id_rsa', use_sudo=True)
+
     sudo('sudo rm -rf ~/app/todo-helper')
     run('mkdir -p ~/app')
     # sudo('git clone git@github.com:p4r4digm/todo-helper.git -b sys-admin-peter ~/app/todo-helper',
     #     pty=False)
 
     # public repo, it works.
-    sudo('git clone https://github.com/p4r4digm/todo-helper.git -b sys-admin-peter ~/app/todo-helper',
+    sudo('git clone https://github.com/p4r4digm/todo-helper.git ~/app/todo-helper',
         pty=False)
-    run('sudo chgrp -R vagrant ~/app')
+    # run('sudo chgrp -R %s ~/app')
     run('sudo chmod -R g+wx ~/app')
 
 
 @task
 def config():
-    # put('./config/sshconfig', '~/.ssh/config', use_sudo=True)
+    put('./config/userpass.config', '~/app/todo-helper/config/userpass.config', use_sudo=True)
 
-    put('./config/todo-helper_deploy_key', '~/.ssh/id_rsa', use_sudo=True)
-
-    put('./config/userpass.txt', '~/app/todo-helper/config/userpass.txt', use_sudo=True)
 
 ##############################################
 # restart_all task, and it's related subtasks
