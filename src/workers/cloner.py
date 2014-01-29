@@ -16,7 +16,6 @@ from src.db.todoRepos import RepoQueues, Repo
 from src.workers.workerStatus import WorkerStatus
 
 redis = src.db.todoRedis.connect()
-gh = createGithubObject()
 
 def runWorker(status):
     #This causes this thread to ignore interrupt signals so theya re only handled by parent
@@ -81,7 +80,10 @@ def main(argv):
 
 
 if __name__ == "__main__": 
-    main(sys.argv[1])
+    if len(sys.argv) > 1:        
+        main(sys.argv[1])
+    else:
+        main("0")
 
 
 

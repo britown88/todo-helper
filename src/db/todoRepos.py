@@ -6,7 +6,6 @@ from src.todoLogging import log, WarningLevels
 class RepoQueues:
     Cloning = "queues::cloning"
     Parsing = "queues::parsing"
-    Scheduling = "queues::scheduling"
     Posting = "queues::posting"
     RepoGY = "queues::repogy"
     TodoGY = "queues::todogy"
@@ -24,6 +23,8 @@ class Repo:
         self.branch = u''
         self.commitSHA = ''
         self.tagDate = datetime.now().strftime("%m/%d/%Y %H:%M:%S")
+        self.lastTodoPosted = ''
+        self.lastTodoPostDate = ''
 
     def key(self):
         return 'repos::%s/%s' % (self.userName, self.repoName)
@@ -66,7 +67,9 @@ class Repo:
 
         return True
            
-            
+    
+    #Looks through the branches on github itself to get the 
+    #latest commit SHA for the default branch
     def getGithubSHA(self, gh):
         
         try:
@@ -88,7 +91,7 @@ class Todo:
         self.commentBlock = ''
         self.blameUser = ''
         self.blameDate = ''
-        self.commitSHA = ''
+        self.issueURL = ''
 
     def save(self, parent):
         key = KEY_FORMAT % (parent.key(), self.filePath.rsplit('/',1)[1], self.lineNumber)

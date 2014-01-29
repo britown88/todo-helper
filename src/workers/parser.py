@@ -16,7 +16,6 @@ from src.db.todoRepos import RepoQueues, Repo
 from src.workers.workerStatus import WorkerStatus
 
 redis = src.db.todoRedis.connect()
-gh = createGithubObject()
 
 def runWorker(status):
     #This causes this thread to ignore interrupt signals so theya re only handled by parent
@@ -70,7 +69,7 @@ def runWorker(status):
             src.todoMelvin.deleteLocalRepo(repo)
             
             if len(repo.Todos) > 0:
-                redis.rpush(RepoQueues.Scheduling, repoKey)
+                redis.rpush(RepoQueues.Posting, repoKey)
             else:
                 log(WarningLevels.Debug, "0 TODOs found, deleting from Redis.") 
                 redis.delete(repoKey)
@@ -112,7 +111,10 @@ def main(argv):
 
 
 if __name__ == "__main__": 
-    main(sys.argv[1])
+    if len(sys.argv) > 1:        
+        main(sys.argv[1])
+    else:
+        main("0")
 
 
 
