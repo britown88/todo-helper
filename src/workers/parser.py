@@ -57,7 +57,7 @@ def runWorker(status):
             src.todoMelvin.deleteLocalRepo(repo)
             
             if len(repo.Todos) > 0:
-                redis.rpush(RepoQueues.Scheduling, repoKey)
+                redis.rpush(RepoQueues.Posting, repoKey)
             else:
                 log(WarningLevels.Debug, "0 TODOs found, deleting from Redis.") 
                 redis.delete(repoKey)

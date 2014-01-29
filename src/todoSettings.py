@@ -37,6 +37,7 @@ class Settings:
         self.maxParseQueueCount = 0
         
         self.parserSleepTime = 0.0
+        self.posterSleepTime = 0.0
 
         
         lines = []
