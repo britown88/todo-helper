@@ -20,7 +20,7 @@ from dateutil.parser import parse
 
 import config
 from db.todoRedis import connect
-from db.todoRepos import repoExists, addNewRepo, Todo, getRepos
+from db.todoRepos import repoExists, addNewRepo, Todo, getRepos, Repo
 from src.todoIssueGenerator import buildIssue
 from src.findTodo import walk
 from src.todoLogging import WarningLevels, log, callWithLogging
@@ -110,7 +110,7 @@ def checkoutRepo(repo):
     log(WarningLevels.Info, "Cloning %s..."%(repo.key()))  
     callWithLogging(['git', 'clone', '--quiet', repo.gitUrl, 'repos/%s' % (repo.key().replace('/', '-'))])
     
-    
+    setCommitSHAFromClone(repo)
     repo.status = "Cloned"
     repo.save()
     
@@ -126,11 +126,11 @@ def parseRepoForTodos(repo):
     log(WarningLevels.Info, "%i TODOs found in %s"%(len(todoList), repo.key())) 
     
     for todo in todoList:
-        buildTodo(repo, todo)        
+        buildTodo(repo, todo)  
     
-    setCommitSHAFromClone(repo)
     repo.status = "Parsed"
     repo.save()
+
     
     
 # Takes a db.todoRepos.Repo and a dict from findTodo.walk and buids/saves a todo
