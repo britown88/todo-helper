@@ -132,8 +132,8 @@ def buildDatePhrase(dateString):
 # Compiles the different parts of the issue's body and returns the final string
 # Takes the data dictionary to render the templates with
 def buildIssueBody(data):
-    #if random.randint(0,1) == 1:
-        #data['BlameDate'] = data['BlameDateEuro']
+    if random.randint(0,1) == 1:
+        data['BlameDate'] = data['BlameDateEuro']
 
     emphasisList = buildEmphasisTemplatesList()
     complaintList = buildComplaintTemplatesList()
