@@ -31,6 +31,9 @@ def vagrant(app='all', boot=True, destroy=False):
 def melvintest(app='all'):
     env.update(APP_ENV['melvintest'])
 
+@task
+def melvinlive(app='all'):
+    env.update(APP_ENV['melvinlive'])
 
 @task
 def prod():
@@ -71,7 +74,7 @@ def system_install(*packages):
     sudo('apt-get -yqq install %s' % ' '.join(packages), shell=False)
 
 def render_template_file(filename, nginxVars):
-    jinja_env = Environment(loader=FileSystemLoader('templates'))
+    jinja_env = Environment(loader=FileSystemLoader('config'))
     tmpl = jinja_env.get_template(filename)
     return StringIO(tmpl.render(nginxVars))
 
@@ -127,6 +130,15 @@ def config():
     put('./config/userpass.config', '~/app/todo-helper/config/userpass.config', use_sudo=True)
     put('./webapp/flaskapp/access_token.txt', '~/app/todo-helper/webapp/flaskapp/access_token.txt', use_sudo=True)
 
+    redisConfTemplated = render_template_file('redis.conf.jinja', {'rdb_location': env.rdb_location})
+    put(redisConfTemplated, '~/app/todo-helper/config/redis.conf', use_sudo=True)
+
+    # put('./config/circus.conf', '/etc/init/circus.conf', use_sudo=True)
+    # put('./config/circus.ini', '/etc/circus.ini', use_sudo=True)
+
+
+
+
 @task
 def webapp_build():
     with cd('~/app/todo-helper/webapp'):
@@ -144,6 +156,11 @@ def webapp_build():
 @task
 def restart_all():
     restart_nginx()
+    restart_redis()
+
+@task
+def restart_redis():
+    sudo('redis-server ~/app/todo-helper/config/redis.conf')
 
 @task
 def restart_nginx():
@@ -158,6 +175,29 @@ def start_nginx():
 def stop_nginx():
     sudo('service nginx stop')
 
+@task
+def restart_circus():
+    stop_circusd()
+    start_circusd()
+    circus_status()
+
+@task
+def circus_status():
+    with cd('~/app/todo-helper'):
+        with prefix('source ./env/bin/activate'):
+            run('circusctl status')
+
+@task
+def start_circus():
+    with cd('~/app/todo-helper'):
+        with prefix('source ./env/bin/activate'):
+            run('circusd --daemon config/circus.ini')
+
+@task
+def stop_circusd():
+    with cd('~/app/todo-helper'):
+        with prefix('source ./env/bin/activate'):
+            run('circusctl stop')
 
 
 ##############################################
