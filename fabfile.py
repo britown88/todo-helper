@@ -130,13 +130,11 @@ def config():
     put('./config/userpass.config', '~/app/todo-helper/config/userpass.config', use_sudo=True)
     put('./webapp/flaskapp/access_token.txt', '~/app/todo-helper/webapp/flaskapp/access_token.txt', use_sudo=True)
 
-    redisConfTemplated = render_template_file('redis.conf.jinja', {'rdb_location': env.rdb_location})
+    redisConfTemplated = render_template_file('redis.conf.jinja', {
+        'rdb_location': env.rdb_location,
+        'rdb_workingdir': env.rdb_workingdir
+        })
     put(redisConfTemplated, '~/app/todo-helper/config/redis.conf', use_sudo=True)
-
-    # put('./config/circus.conf', '/etc/init/circus.conf', use_sudo=True)
-    # put('./config/circus.ini', '/etc/circus.ini', use_sudo=True)
-
-
 
 
 @task
@@ -160,7 +158,9 @@ def restart_all():
 
 @task
 def restart_redis():
-    sudo('redis-server ~/app/todo-helper/config/redis.conf')
+    # on my amazon machine, melvintest, this failed initially because 
+    # there was a redis service running
+    sudo('sudo redis-server ~/app/todo-helper/config/redis.conf')
 
 @task
 def restart_nginx():
@@ -176,9 +176,9 @@ def stop_nginx():
     sudo('service nginx stop')
 
 @task
-def restart_circus():
-    stop_circusd()
-    start_circusd()
+def circus_restart():
+    circus_stop()
+    circus_start()
     circus_status()
 
 @task
@@ -188,16 +188,27 @@ def circus_status():
             run('circusctl status')
 
 @task
-def start_circus():
+def circus_first():
     with cd('~/app/todo-helper'):
         with prefix('source ./env/bin/activate'):
-            run('circusd --daemon config/circus.ini')
+            sudo('circusd --daemon config/circus.ini')
 
 @task
-def stop_circusd():
+def circus_start():
+    with cd('~/app/todo-helper'):
+        with prefix('source ./env/bin/activate'):
+            sudo('circusctl start')
+
+@task
+def circus_stop():
     with cd('~/app/todo-helper'):
         with prefix('source ./env/bin/activate'):
             run('circusctl stop')
+
+@task
+def circus_tail_log():
+    with cd('~/app/todo-helper'):
+        run('tail -f todo.log')
 
 
 ##############################################
