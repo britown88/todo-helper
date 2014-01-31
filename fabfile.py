@@ -53,6 +53,8 @@ def build():
 
     sudopip(['virtualenv'])
 
+    node()
+
 def pip_install_from_requirements_file():
     run('pip install -r pip-reqs', shell=False)
 
@@ -72,6 +74,23 @@ def render_template_file(filename, nginxVars):
     jinja_env = Environment(loader=FileSystemLoader('templates'))
     tmpl = jinja_env.get_template(filename)
     return StringIO(tmpl.render(nginxVars))
+
+def node():
+    # ppa repo for node 0.8.23
+    sudo('sudo add-apt-repository ppa:chris-lea/node.js-legacy --remove', pty=False, quiet=True)
+    sudo('sudo add-apt-repository ppa:chris-lea/node.js', pty=False, quiet=True)
+    system_update()
+
+    system_install('nodejs')
+    sudo('apt-get -yqq remove coffeescript')
+
+    # `npm install` uses this folder sometimes, and will complain if it doesn't have proper access.
+    sudo('mkdir -p ~/tmp')
+    sudo('chmod 0777 ~/tmp')
+
+    # install global requirements
+    sudo('npm install -g grunt-cli coffee-script bower')
+
 
 
 ##########################################
@@ -108,6 +127,12 @@ def config():
     put('./config/userpass.config', '~/app/todo-helper/config/userpass.config', use_sudo=True)
     put('./webapp/flaskapp/access_token.txt', '~/app/todo-helper/webapp/flaskapp/access_token.txt', use_sudo=True)
 
+@task
+def webapp_build():
+    with cd('~/app/todo-helper/webapp'):
+        run('npm install')
+        run('bower install')
+        run('grunt browserify')
 
 
 ##############################################
@@ -119,8 +144,6 @@ def config():
 @task
 def restart_all():
     restart_nginx()
-    with cd('~/app/todo-helper/src'):
-        run('python todoMelvin.py')
 
 @task
 def restart_nginx():
