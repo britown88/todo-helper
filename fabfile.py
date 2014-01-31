@@ -49,16 +49,18 @@ def build():
     system_install('git')
     system_install('nginx uwsgi')
 
-    system_install('python-software-properties python g++ make python-pip') #pip deps
+    system_install('python-software-properties python g++ make python-pip python-dev') #pip deps
 
-    reqs = file(os.path.join(PROJECT_PATH, 'pip-reqs')).read().split()
-    pip(reqs)
+    sudopip(['virtualenv'])
 
-def pip_install_from_requirements_file(filename):
-    sudo('sudo pip install -r %s' % os.path.join(PROJECT_PATH, filename), shell=False)
+def pip_install_from_requirements_file():
+    run('pip install -r pip-reqs', shell=False)
+
+def sudopip(packages):
+    sudo('sudo pip install %s' % ' '.join(packages), shell=False)
 
 def pip(packages):
-    sudo('sudo pip install %s' % ' '.join(packages), shell=False)
+    run('pip install %s' % ' '.join(packages), shell=False)
 
 def system_update():
     sudo('apt-get -yqq update')
@@ -80,21 +82,32 @@ def render_template_file(filename, nginxVars):
 def deploy():
     put('./config/todo-helper_deploy_key', '~/.ssh/id_rsa', use_sudo=True)
 
-    sudo('sudo rm -rf ~/app/todo-helper')
-    run('mkdir -p ~/app')
-    # sudo('git clone git@github.com:p4r4digm/todo-helper.git -b sys-admin-peter ~/app/todo-helper',
-    #     pty=False)
+    if files.exists('~/app/todo-helper'):
+        with cd('~/app/todo-helper'):
+            run('git checkout master')
+            run('git pull origin master')
+    else:
 
-    # public repo, it works.
-    sudo('git clone https://github.com/p4r4digm/todo-helper.git ~/app/todo-helper',
-        pty=False)
-    # run('sudo chgrp -R %s ~/app')
-    run('sudo chmod -R g+wx ~/app')
+        sudo('sudo rm -rf ~/app/todo-helper')
+        run('mkdir -p ~/app')
+
+        run('git clone https://github.com/p4r4digm/todo-helper.git ~/app/todo-helper',
+            pty=False)
+        # run('sudo chgrp -R %s ~/app')
+        run('sudo chmod -R g+wx ~/app')
+
+    with cd('~/app/todo-helper'):
+        run('virtualenv env --no-site-packages')
+        # with run('source ./env/bin/activate'):
+        with prefix('source ./env/bin/activate'):
+            pip_install_from_requirements_file()
 
 
 @task
 def config():
     put('./config/userpass.config', '~/app/todo-helper/config/userpass.config', use_sudo=True)
+    put('./webapp/flaskapp/access_token.txt', '~/app/todo-helper/webapp/flaskapp/access_token.txt', use_sudo=True)
+
 
 
 ##############################################
