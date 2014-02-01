@@ -35,20 +35,21 @@ Comments = React.createClass
         }
 
   openComments: ->
-    $("#comments_#{@props.item.id}").collapse()
+    # not right now, doesn't make sense.
+    # $("#comments_#{@props.item.id}").collapse()
 
   createItem: (item) ->
     return Media {
       imageUrl: item.user.html_url
       imageSrc: item.user.avatar_url
-      subtitle: "comment:#{item.user.login}"
+      subtitle: item.user.login
     }, item.body
 
   render: -> 
     console.log @state
     return (div {className: "comments-container"}, [
       if @state.commentsData.length > 0 then (Collapsible {
-        header: 'Comments'
+        header: "Comments (#{@state.commentsData.length})"
         unique: "comments_#{@props.item.id}"
         collapsed: false
         }, [

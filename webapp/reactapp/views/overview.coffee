@@ -126,14 +126,15 @@ Overview = React.createClass
         ]) else '',
       ),
       (hr {className: 'clear'}),
-      div {}, [
+      (div {}, [
         @state.issuesData.map(@createItem)
-      ],
-      button {
+      ]),
+      (button {
         className: "btn #{if @state.loading then 'btn-disabled' else 'btn-info'}",
         disabled: @state.loading,
         onClick: @getMoar,
-        }, "MOAR (or, a handful more.)"
+        }, "MOAR (or, a handful more.)")
+      (hr {className: 'clear tall70'}),
     ])
 
 
