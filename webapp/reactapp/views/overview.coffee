@@ -115,7 +115,7 @@ Overview = React.createClass
         if @state.issuesMeta.rate then (div {className: 'meta-container pull-right'}, [
           (p {}, "RateLimit: #{@state.issuesMeta.rate.limit}"),
           (p {}, "Remaining: #{@state.issuesMeta.rate.remaining}"),
-          (p {}, "RateLimit reset: #{moment(@state.issuesMeta.rate.reset, 'X').format('MMMM Do YYYY, h:mm:ss a')}")
+          (p {}, "RateLimit reset: #{moment(@state.issuesMeta.rate.reset, 'X').format('MM Do YYYY, h:mm:ss a ZZ')}")
         ]) else '',
         if @state.queue then (div {className: 'meta-container pull-right'}, [
           (p {}, "Issues posted: #{@state.queue.postedIssueCount}"),
@@ -133,7 +133,7 @@ Overview = React.createClass
         className: "btn #{if @state.loading then 'btn-disabled' else 'btn-info'}",
         disabled: @state.loading,
         onClick: @getMoar,
-        }, "MOAR (or, 5 more.)"
+        }, "MOAR (or, a handful more.)"
     ])
 
 

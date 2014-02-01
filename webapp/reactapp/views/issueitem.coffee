@@ -10,6 +10,7 @@ Media = require './media.coffee'
 
 IssueItem = React.createClass
   render: -> 
+    theTime = moment.utc(@props.item.created_at).local() #.subtract('hours', 8)
     (div {}, [
       (Media {
         imageUrl: @props.item.user.html_url
@@ -24,7 +25,8 @@ IssueItem = React.createClass
             "URL: ",
             (a {
               href: @props.item.url
-            }, @props.item.url)
+            }, @props.item.url),
+            "   ------   Posted at: #{theTime.format('MM-DD-YYYY, h:mm:ss a ZZ')}"
           ]
           p {}, [
             "State: ",
