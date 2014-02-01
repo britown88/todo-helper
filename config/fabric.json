@@ -1,5 +1,6 @@
 {
   "vagrant": {
+    "server_name": "http://localhost",
     "environment": "vagrant",
     "rdb_workingdir": "./",
     "rdb_location": "backup.rdb",

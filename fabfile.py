@@ -52,7 +52,7 @@ def build():
     system_install('git')
     system_install('nginx uwsgi')
 
-    system_install('python-software-properties python g++ make python-pip python-dev') #pip deps
+    system_install('python-software-properties python g++ make python-pip python-dev uwsgi-plugin-python') #pip deps
 
     sudopip(['virtualenv'])
 
@@ -102,21 +102,23 @@ def node():
 
 @task
 def deploy():
-    put('./config/todo-helper_deploy_key', '~/.ssh/id_rsa', use_sudo=True)
 
-    if files.exists('~/app/todo-helper'):
-        with cd('~/app/todo-helper'):
-            run('git checkout master')
-            run('git pull origin master')
-    else:
+    if env.environment != 'vagrant':
+        put('./config/todo-helper_deploy_key', '~/.ssh/id_rsa', use_sudo=True)
 
-        sudo('sudo rm -rf ~/app/todo-helper')
-        run('mkdir -p ~/app')
+        if files.exists('~/app/todo-helper'):
+            with cd('~/app/todo-helper'):
+                run('git checkout master')
+                run('git pull origin master')
+        else:
 
-        run('git clone https://github.com/p4r4digm/todo-helper.git ~/app/todo-helper',
-            pty=False)
-        # run('sudo chgrp -R %s ~/app')
-        run('sudo chmod -R g+wx ~/app')
+            sudo('sudo rm -rf ~/app/todo-helper')
+            run('mkdir -p ~/app')
+
+            run('git clone https://github.com/p4r4digm/todo-helper.git ~/app/todo-helper',
+                pty=False)
+            # run('sudo chgrp -R %s ~/app')
+            run('sudo chmod -R g+wx ~/app')
 
     with cd('~/app/todo-helper'):
         run('virtualenv env --no-site-packages')
@@ -125,16 +127,42 @@ def deploy():
             pip_install_from_requirements_file()
 
 
+    sudo('chgrp www-data -R ~/app/')
+    sudo('sudo chmod 777 ~/app/')
+
+
 @task
 def config():
-    put('./config/userpass.config', '~/app/todo-helper/config/userpass.config', use_sudo=True)
-    put('./webapp/flaskapp/access_token.txt', '~/app/todo-helper/webapp/flaskapp/access_token.txt', use_sudo=True)
+    if env.environment != 'vagrant':
+        put('./config/userpass.config', '~/app/todo-helper/config/userpass.config', use_sudo=True)
+        put('./webapp/flaskapp/access_token.txt', '~/app/todo-helper/webapp/flaskapp/access_token.txt', use_sudo=True)
+        put('./webapp/flaskapp/password.txt', '~/app/todo-helper/webapp/flaskapp/password.txt', use_sudo=True)
 
     redisConfTemplated = render_template_file('redis.conf.jinja', {
         'rdb_location': env.rdb_location,
         'rdb_workingdir': env.rdb_workingdir
         })
     put(redisConfTemplated, '~/app/todo-helper/config/redis.conf', use_sudo=True)
+
+    put(os.path.join(PROJECT_PATH, 'config', 'base_nginx.conf'),
+        '/etc/nginx/nginx.conf',
+        use_sudo=True)
+
+    confTmpl = render_template_file('todowebapp_nginx.conf', {
+        'user': env.user,
+        })
+    put(confTmpl, '/etc/nginx/sites-available/todowebapp', use_sudo=True)
+
+    if not files.exists('/etc/nginx/sites-enabled/todowebapp', use_sudo=True):
+        sudo('sudo ln -s /etc/nginx/sites-available/todowebapp /etc/nginx/sites-enabled/todowebapp')
+
+    confTmpl = render_template_file('uwsgi.ini', {
+        'user': env.user,
+        })
+    put(confTmpl, '/etc/uwsgi/apps-available/uwsgi.ini', use_sudo=True)
+
+    if not files.exists('/etc/uwsgi/apps-enabled/uwsgi.ini', use_sudo=True):
+        sudo('sudo ln -s /etc/uwsgi/apps-available/uwsgi.ini /etc/uwsgi/apps-enabled/uwsgi.ini')
 
 
 @task
@@ -152,28 +180,15 @@ def webapp_build():
 ##############################################
 
 @task
-def restart_all():
-    restart_nginx()
-    restart_redis()
+def restart_webapp():
+    sudo('sudo service nginx restart')
+    sudo('sudo service uwsgi restart')
 
 @task
 def restart_redis():
     # on my amazon machine, melvintest, this failed initially because 
     # there was a redis service running
     sudo('sudo redis-server ~/app/todo-helper/config/redis.conf')
-
-@task
-def restart_nginx():
-    stop_nginx()
-    start_nginx()
-
-@task
-def start_nginx():
-    sudo('service nginx start')
-
-@task
-def stop_nginx():
-    sudo('service nginx stop')
 
 @task
 def circus_restart():

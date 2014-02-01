@@ -7,3 +7,5 @@ bower_components/
 *.sublime-project
 *.sublime-workspace
 flaskapp/access_token.txt
+flaskapp/password.txt
+flaskapp/*.txt
