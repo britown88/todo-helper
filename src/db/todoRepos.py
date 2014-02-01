@@ -154,6 +154,46 @@ def getRepos():
         
     return repoList
     
+class IssuePage:
+     def __init__(self, todoList, pageNumber, pageCount):
+        self.todoList = todoList
+        self.pageNumber = pageNumber
+        self.pageCount = pageCount
+
+
+    
+def getPostedIssues(page = 0, recent = True, pageSize = 25):
+    r = todoRedis.connect()
+    
+    issueCount = r.llen(RepoQueues.TodoGY)
+    issues = r.lrange(RepoQueues.TodoGY, 0, issueCount - 1)
+    pageCount = int(issueCount / pageSize) + 1
+    
+    if page >= pageCount:
+        page = pageCount - 1
+        
+    if recent:
+        issues.reverse()
+    
+    issues = issues[page * pageSize : min(issueCount,(page + 1) * pageSize )]        
+        
+    todoList = []
+    for issue in issues:
+        todo = Todo()
+        todo.loadFromKey(issue)
+        todoList.append(todo)
+        
+    return IssuePage(todoList, page, pageCount)
+        
+    
+        
+
+    
+    
+    
+
+    
+    
 
 
 
