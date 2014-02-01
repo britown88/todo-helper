@@ -1,4 +1,6 @@
 class Settings:
+    # Todo: can we have some type checking in the settings import?
+
     def __init__(self, filenames):
         #Github login info
         self.ghLogin = ''
@@ -40,7 +42,9 @@ class Settings:
         self.parserRepoTimeout = 0.0 #hard timeout for parsing a single repo
         self.posterSleepTime = 0.0
 
-        
+        # Webapp Settings
+        self.webappPageSize = 0
+
         lines = []
         try:
             for filename in filenames:

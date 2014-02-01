@@ -115,6 +115,8 @@ def deploy():
                 pty=False)
             # run('sudo chgrp -R %s ~/app')
             run('sudo chmod -R g+wx ~/app')
+            sudo('chgrp www-data -R ~/app/')
+            sudo('sudo chmod 777 ~/app/')
 
     with cd('~/app/todo-helper'):
         if not files.exists('env'):
@@ -122,9 +124,6 @@ def deploy():
 
         with prefix('source ./env/bin/activate'):
             pip_install_from_requirements_file()
-
-    sudo('chgrp www-data -R ~/app/')
-    sudo('sudo chmod 777 ~/app/')
 
 @task
 def config():
