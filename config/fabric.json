@@ -1,1 +1,33 @@
-{}
+{
+  "vagrant": {
+    "server_name": "http://localhost",
+    "environment": "vagrant",
+    "rdb_workingdir": "./",
+    "rdb_location": "backup.rdb",
+    "user": "vagrant",
+    "hosts": ["127.0.0.1:2275"],
+    "disable_known_hosts": true,
+    "live": false
+  },
+  "melvintest": {
+    "environment": "melvintest",
+    "rdb_workingdir": "/dev/sdf/",
+    "rdb_location": "backup.rdb",
+    "user": "ubuntu",
+    "hosts": ["23.22.5.73"],
+    "key_filename": "~/.amazonkeys/melvin_todo_helper.pem",
+    "disable_known_hosts": true,
+    "live": false
+  },  
+  "melvinlive": {
+    "environment": "melvinlive",
+    "rdb_workingdir": "/dev/sdf/",
+    "rdb_location": "backup.rdb",
+    "user": "ubuntu",
+    "hosts": [],
+    "key_filename": "~/.amazonkeys/melvin_todo_helper.pem",
+    "disable_known_hosts": true,
+    "live": true
+  }
+
+}

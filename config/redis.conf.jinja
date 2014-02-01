@@ -53,10 +53,10 @@ rdbcompression yes
 rdbchecksum yes
 
 # The filename where to dump the DB
-dbfilename backup.rdb
+dbfilename {{rdb_location}}
 
 # The working directory.
-dir ./
+dir {{rdb_workingdir}}
 
 ################################# REPLICATION #################################
 
@@ -208,4 +208,5 @@ client-output-buffer-limit pubsub 32mb 8mb 60
 # a good idea. Most users should use the default of 10 and raise this up to
 # 100 only in environments where very low latency is required.
 hz 10
+
 

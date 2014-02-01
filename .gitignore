@@ -2,6 +2,7 @@
 *.pyc
 *.DS_Store
 *~
+build/
 config/*
 .vagrant/
 env/*
@@ -13,3 +14,8 @@ config/todo-helper_deploy_key.pub
 repos/
 todo.log
 testIssues.txt
+
+*.sublime-project
+*.sublime-workspace
+
+nope/

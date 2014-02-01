@@ -4,7 +4,7 @@ IssueReader =
   converter: new Showdown.converter()
 
   # githubApiUrl: 'https://api.github.com/'
-  githubApiUrl: 'http://localhost:5060/api/'
+  githubApiUrl: '/api/'
 
   now: ->
     moment()
