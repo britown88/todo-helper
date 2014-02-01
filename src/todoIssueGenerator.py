@@ -8,7 +8,7 @@ from dateutil.relativedelta import relativedelta
 from db.todoRepos import Todo
 from src.todoLogging import WarningLevels, log, callWithLogging
 
-titleTemplate = 'Unresolved TODO in {{ FileName }}:{{ LineNumber }}'
+titleTemplate = 'Unresolved TODO in {{ FilePath }} : {{ LineNumber }}'
 issueHeaderTemplate = 'File: `{{ FilePath }}`\nLine: {{ LineNumber }}\n\n```\n{{ CommentBlock }}\n```'
 
 # Builds a template and renders it with the passed-in data
