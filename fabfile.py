@@ -146,6 +146,7 @@ def config():
 
     confTmpl = render_template_file('todowebapp_nginx.conf', {
         'user': env.user,
+        'server_name': env.server_name,
         })
     put(confTmpl, '/etc/nginx/sites-available/todowebapp', use_sudo=True)
 

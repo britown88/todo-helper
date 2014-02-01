@@ -1,6 +1,6 @@
 {
   "vagrant": {
-    "server_name": "http://localhost",
+    "server_name": "todohelper.localhost",
     "environment": "vagrant",
     "rdb_workingdir": "./",
     "rdb_location": "backup.rdb",
@@ -12,6 +12,7 @@
     "userpass_config": "test_userpass.config"
   },
   "melvintest": {
+    "server_name": "ec2-23-22-5-73.compute-1.amazonaws.com",
     "environment": "melvintest",
     "rdb_workingdir": "/dev/sdf/",
     "rdb_location": "backup.rdb",
@@ -24,6 +25,7 @@
     "userpass_config": "test_userpass.config"
   },  
   "melvinlive": {
+    "server_name": "ec2-54-242-71-243.compute-1.amazonaws.com",
     "environment": "melvinlive",
     "rdb_workingdir": "/dev/sdf/",
     "rdb_location": "backup.rdb",
