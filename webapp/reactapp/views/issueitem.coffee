@@ -19,6 +19,7 @@ IssueItem = React.createClass
       }, (Collapsible {
           header: @props.item.title
           unique: "issue_#{@props.item.id}"
+          collapsed: false
         }, (div {
             dangerouslySetInnerHTML: {
               __html: IssueReader.converter.makeHtml(

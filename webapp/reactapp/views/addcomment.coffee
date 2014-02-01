@@ -61,6 +61,7 @@ AddComment = React.createClass
     (Collapsible {
       header: 'Add Comment'
       unique: "addcomment_#{@props.item.id}"
+      collapsed: true
       }, (div {}, 
         form {onSubmit: @handleSubmit}, [
           textarea {

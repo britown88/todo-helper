@@ -12,6 +12,7 @@ from flask import ( Flask,
                     send_from_directory,
                     url_for)
 from flask.ext.sqlalchemy import SQLAlchemy
+import gevent
 from jinja2 import Environment
 
 from flaskapp import app, options, basedir, access_token
@@ -68,9 +69,6 @@ def load_views(webapp, authdb):
     @webapp.route('/api/<path:apipath>', methods=['GET', 'POST'])
     @authdb.requires_auth
     def api(apipath):
-        ## we'll be getting issues from here:
-        # def getPostedIssues(page = 0, recent = True, pageSize = 25):
-
         githubApiUrl = 'https://api.github.com/'
 
         print apipath
@@ -94,6 +92,36 @@ def load_views(webapp, authdb):
         except urllib2.URLError as e:
             print e.reason
             return jsonify(e)
+
+    @webapp.route('/issues')
+    @webapp.route('/issues/')
+    @webapp.route('/issues/<int:page>')
+    @authdb.requires_auth
+    def issues(page=0):
+        def gh_request(issueUrl):
+            req = urllib2.Request(
+                "%s?access_token=%s" % (issueUrl, access_token)
+                )
+            response = urllib2.urlopen(req)
+            respData = json.loads(response.read())
+            return respData
+
+        ## we'll be getting issues from here:
+        # def getPostedIssues(page = 0, recent = True, pageSize = 25):
+        issues = getPostedIssues(page, True, 5)
+        issueUrls = issues['todoList']
+
+        jobs = [gevent.spawn(gh_request, url) for url in issueUrls]
+        gevent.joinall(jobs, timeout=8)
+        
+        data = [job.value for job in jobs]
+
+        return jsonify(
+            data = data,
+            pageNumber = issues['pageNumber'],
+            pageCount = issues['pageCount'],
+            )
+
 
 
     @webapp.route('/redis-stats/')

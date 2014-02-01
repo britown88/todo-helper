@@ -6,6 +6,7 @@ IssueItem = require './issueitem.coffee'
 Media = require './media.coffee'
 
 {
+  button,
   div, 
   h4, 
   hr,
@@ -18,18 +19,20 @@ Media = require './media.coffee'
 Overview = React.createClass
   getInitialState: ->
     # hit ajax stuff
-    @getIssues()
+    @getIssues(0)
     @getMeta()
     @getQueue()
     return {
-      issueUrl: 'https://api.github.com/repos/p4r4digm/todo-helper/issues'
+      issueUrl: '/issues'
       issuesData: []
       issuesMeta: {}
       queue: {}
+      nextPage: 0
+      loading: true
     }
 
-  getIssues: ->
-    $.ajax "#{IssueReader.githubApiUrl}repos/p4r4digm/todo-helper/issues",
+  getIssues: (pageNumber)->
+    $.ajax "/issues/#{pageNumber}",
       type: 'get'
       dataType: 'json'
       contentType: 'text/json'
@@ -46,9 +49,19 @@ Overview = React.createClass
           item.body = @safeBrackets item.body
           item.title = @safeBrackets item.title
 
+          newIssues = @state.issuesData.concat if _.has(data.data, 'length') then data.data else []
+
         @setState {
-          issuesData: if _.has(data.data, 'length') then data.data[0..9] else []
+          issuesData: newIssues
+          nextPage: @state.nextPage + 1
+          loading: false
         }
+
+  getMoar: ->
+    @setState {
+      loading: true
+    }
+    @getIssues @state.nextPage
 
   getMeta: ->
     $.ajax "#{IssueReader.githubApiUrl}rate_limit",
@@ -117,7 +130,12 @@ Overview = React.createClass
       (hr {className: 'clear'}),
       div {}, [
         @state.issuesData.map(@createItem)
-      ]
+      ],
+      button {
+        className: "btn #{if @state.loading then 'btn-disabled' else 'btn-info'}",
+        disabled: @state.loading,
+        onClick: @getMoar,
+        }, "MOAR (or, 5 more.)"
     ])
 
 

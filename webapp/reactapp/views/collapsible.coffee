@@ -17,7 +17,7 @@ Collapsible = React.createClass
           }, @props.header)
       (div {
         id: "#{@props.unique}"
-        className: "panel-collapse collapse"
+        className: "panel-collapse #{if @props.collapsed then 'collapse' else 'in'}"
         },
         (div {
           className: 'panel-body'

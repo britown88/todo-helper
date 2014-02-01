@@ -50,6 +50,7 @@ Comments = React.createClass
       if @state.commentsData.length > 0 then (Collapsible {
         header: 'Comments'
         unique: "comments_#{@props.item.id}"
+        collapsed: false
         }, [
         @state.commentsData.map(@createItem)
       ]) else '',
