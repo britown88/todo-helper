@@ -54,7 +54,7 @@ def load_views(webapp, friendAuth, adminAuth):
     def favicon():
         #print "found favicon.ico"
         #print os.path.join(webapp.root_path, '..', 'media', 'favicon.ico')
-        return send_from_directory(os.path.join(webapp.root_path, '..', 'media'), 'favicon.ico')
+        return send_from_directory(os.path.join(webapp.root_path, '..', 'media'), 'favicon.png')
 
     @webapp.route('/bower_components/<path:filename>')
     def bower_components(filename):
