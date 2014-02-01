@@ -33,6 +33,12 @@ def buildComplaintTemplatesList():
     templates.append("It's been {{ TimeSinceBlameDate }}.")
     templates.append("I've been waiting for this for {{ TimeSinceBlameDate }}.")
     templates.append("I've been waiting for this since {{ BlameDate }}.")
+    templates.append("It's hard to watch {{ BlameUserName }}'s work go to waste.")
+    templates.append("It's not like {{ BlameDate }} was yesterday.")
+    templates.append("I've finished entire projects in less than {{ TimeSinceBlameDate }}.")
+    templates.append("There's been nary a peep about {{ FileName }} since {{ BlameDate }}.")
+    templates.append("When you said {{ CommentBlock }}, I thought you might actually move on {{ FileName }}, but no.")
+
 
     return templates
  
@@ -57,6 +63,18 @@ def buildEmphasisTemplatesList():
     templates.append("Is there a hacky workaround?")
     templates.append("Can {{BlameUserName}} bang it out?")
     templates.append("I'm available for consultation.")
+    templates.append("Stop making excuses.")
+    templates.append("If you worked {{ RandomCompany }} you'd never get away with this.")
+    templates.append("Frakkin' cylon.")
+    templates.append("My work {{ RandomCompany }} far surpasses this.")
+    templates.append("Will you please accept the suggested changes?")
+    templates.append("I couldn't sign off on this in good conscience.")
+    templates.append("If this were a project {{ RandomCompany }}, no one would bother leaking it.")
+    templates.append("Line {{ LineNumber }}? More like {{ LineNumber }} problems.")
+    templates.append("Better get a bug filed on this.")
+    templates.append("You boldly went there.")
+    templates.append("Don't assign this to me, though, I don't want to be stuck with shoddy work.")
+
 
     return templates
 
@@ -68,6 +86,10 @@ def buildRandomEmployer():
     templates.append('at an actual company')
     templates.append('in the real world')
     templates.append('in the professional world')
+    templates.append('at LinkedIn')
+    templates.append('at Intel')
+    templates.append('at Cisco')
+    templates.append('at Oracle')
 
     return random.choice(templates)
 
