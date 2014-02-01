@@ -115,7 +115,7 @@ Overview = React.createClass
         if @state.issuesMeta.rate then (div {className: 'meta-container pull-right'}, [
           (p {}, "RateLimit: #{@state.issuesMeta.rate.limit}"),
           (p {}, "Remaining: #{@state.issuesMeta.rate.remaining}"),
-          (p {}, "RateLimit reset: #{moment(@state.issuesMeta.rate.reset, 'X').format('MM Do YYYY, h:mm:ss a ZZ')}")
+          (p {}, "RateLimit reset: #{moment(@state.issuesMeta.rate.reset, 'X').format('MMM Do YYYY, h:mm:ss a ZZ')}")
         ]) else '',
         if @state.queue then (div {className: 'meta-container pull-right'}, [
           (p {}, "Issues posted: #{@state.queue.postedIssueCount}"),

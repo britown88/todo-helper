@@ -100,7 +100,7 @@ def node():
 def deploy():
 
     if env.environment != 'vagrant':
-        put('./config/todo-helper_deploy_key', '~/.ssh/id_rsa', use_sudo=True)
+        # put('./config/todo-helper_deploy_key', '~/.ssh/id_rsa', use_sudo=True)
 
         if files.exists('~/app/todo-helper'):
             with cd('~/app/todo-helper'):
