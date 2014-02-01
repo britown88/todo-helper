@@ -19,12 +19,8 @@ from flaskapp import app, options, basedir, access_token
 
 env = Environment()
 
-
 from functools import wraps
 from flask import current_app
-
-print "app"
-print app
 
 def jsonp(func):
     """Wraps JSONified output for JSONP requests."""
@@ -88,7 +84,4 @@ def load_views(webapp, authdb):
             )
 
     return webapp
-
-
-print "imported views"
 
