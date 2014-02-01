@@ -11,12 +11,13 @@
 }
 
 .title-container {
-	width: 60%;
-
+	width: 40%;
 }
+
 .meta-container {
 	display: inline;
 	float: left;
+	margin-left: 20px;
 }
 
 .clear {

@@ -5,6 +5,8 @@ import sys
 
 PROJECT_PATH = os.path.abspath(os.path.dirname(__file__))
 sys.path.append(os.path.join(PROJECT_PATH, '..'))
+sys.path.append(PROJECT_PATH)
+
 from todoSettings import Settings
 
 settings = Settings([
@@ -19,8 +21,8 @@ from pygithub3 import Github
 from dateutil.parser import parse
 
 import config
-from db.todoRedis import connect
-from db.todoRepos import repoExists, addNewRepo, Todo, getRepos, Repo
+
+from src.db.todoRepos import repoExists, addNewRepo, Todo, getRepos, Repo
 from src.todoIssueGenerator import buildIssue
 from src.findTodo import walk
 from src.todoLogging import WarningLevels, log, callWithLogging

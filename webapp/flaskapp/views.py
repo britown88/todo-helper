@@ -22,6 +22,9 @@ env = Environment()
 from functools import wraps
 from flask import current_app
 
+import src.todoMelvin
+from src.db.todoRepos import getPostedIssues, getQueueStats
+
 def jsonp(func):
     """Wraps JSONified output for JSONP requests."""
     @wraps(func)
@@ -65,6 +68,9 @@ def load_views(webapp, authdb):
     @webapp.route('/api/<path:apipath>', methods=['GET', 'POST'])
     @authdb.requires_auth
     def api(apipath):
+        ## we'll be getting issues from here:
+        # def getPostedIssues(page = 0, recent = True, pageSize = 25):
+
         githubApiUrl = 'https://api.github.com/'
 
         print apipath
@@ -73,16 +79,14 @@ def load_views(webapp, authdb):
             "%s%s?access_token=%s" % (githubApiUrl, apipath, access_token)
             )
 
-        print req
 
         if request.method == 'POST':
             req.add_data(json.dumps(request.form.to_dict()))
 
-        print jsonify(req)
-
         try: 
             response = urllib2.urlopen(req)
             data = json.loads(response.read())
+            print data
             return jsonify(
                 data = data
                 )
@@ -91,5 +95,16 @@ def load_views(webapp, authdb):
             print e.reason
             return jsonify(e)
 
+
+    @webapp.route('/redis-stats/')
+    @authdb.requires_auth
+    def redisStats():
+        derp = getQueueStats()
+        return jsonify(
+            data = derp
+            )
+
+
     return webapp
+
 

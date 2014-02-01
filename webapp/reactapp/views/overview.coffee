@@ -20,10 +20,12 @@ Overview = React.createClass
     # hit ajax stuff
     @getIssues()
     @getMeta()
+    @getQueue()
     return {
       issueUrl: 'https://api.github.com/repos/p4r4digm/todo-helper/issues'
       issuesData: []
       issuesMeta: {}
+      queue: {}
     }
 
   getIssues: ->
@@ -62,10 +64,28 @@ Overview = React.createClass
             AJAX XHR: #{xhr}<br />
             """
       success: (data, status, xhr) =>
+        console.log data
         @setState {
           issuesMeta: data.data
         }
 
+  getQueue: ->
+    $.ajax "/redis-stats",
+      type: 'get'
+      dataType: 'json'
+      contentType: 'text/json'
+      error: (xhr, status, errorThrown) =>
+        IssueReader.addAlert
+          context: 'error'
+          message: """
+            AJAX Error: #{status}<br/>
+            AJAX error thrown: #{errorThrown}<br />
+            AJAX XHR: #{xhr}<br />
+            """
+      success: (data, status, xhr) =>
+        @setState {
+          queue: data.data
+        }
   safeBrackets: (string) ->
     string = string.replace('<', '&lt;')
     string = string.replace('>', '&gt;')
@@ -85,6 +105,13 @@ Overview = React.createClass
           (p {}, "RateLimit: #{@state.issuesMeta.rate.limit}"),
           (p {}, "Remaining: #{@state.issuesMeta.rate.remaining}"),
           (p {}, "RateLimit reset: #{moment(@state.issuesMeta.rate.reset, 'X').format('MMMM Do YYYY, h:mm:ss a')}")
+        ]) else '',
+        if @state.queue then (div {className: 'meta-container pull-right'}, [
+          (p {}, "Issues posted: #{@state.queue.postedIssueCount}"),
+          (p {}, "cloneCount: #{@state.queue.cloneCount}"),
+          (p {}, "parseCount: #{@state.queue.parseCount}"),
+          (p {}, "repoCount: #{@state.queue.repoCount}"),
+          (p {}, "postCount: #{@state.queue.postCount}"),
         ]) else '',
       ),
       (hr {className: 'clear'}),
