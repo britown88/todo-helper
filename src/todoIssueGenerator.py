@@ -36,7 +36,7 @@ def buildComplaintTemplatesList():
     templates.append("It's hard to watch {{ BlameUserName }}'s work go to waste.")
     templates.append("It's not like {{ BlameDate }} was yesterday.")
     templates.append("I've finished entire projects in less than {{ TimeSinceBlameDate }}.")
-    templates.append("There's been nary a peep about {{ FileName }} since {{ BlameDate }}.")
+    templates.append("There's been nary a peep about {{ FileName }} since {{ BlameDate }}.")
     templates.append("When you said {{ CommentBlock }}, I thought you might actually move on {{ FileName }}, but no.")
 
 
