@@ -154,20 +154,15 @@ def getRepos():
         
     return repoList
     
-class IssuePage:
-     def __init__(self, todoList, pageNumber, pageCount):
-        self.todoList = todoList
-        self.pageNumber = pageNumber
-        self.pageCount = pageCount
-
-
     
 def getPostedIssues(page = 0, recent = True, pageSize = 25):
     r = todoRedis.connect()
     
     issueCount = r.llen(RepoQueues.TodoGY)
     issues = r.lrange(RepoQueues.TodoGY, 0, issueCount - 1)
-    pageCount = int(issueCount / pageSize) + 1
+    pageCount = int(issueCount / pageSize)
+    if issueCount % pageSize > 0:
+        pageCount += 1
     
     if page >= pageCount:
         page = pageCount - 1
@@ -181,9 +176,28 @@ def getPostedIssues(page = 0, recent = True, pageSize = 25):
     for issue in issues:
         todo = Todo()
         todo.loadFromKey(issue)
-        todoList.append(todo)
+        todoList.append(todo.issueURL)
         
-    return IssuePage(todoList, page, pageCount)
+    pageData = {}
+    pageData['pageNumber'] = page
+    pageData['pageCount'] = pageCount
+    pageData['todoList'] = todoList
+        
+    return pageData
+    
+    
+def getQueueStats():
+    r = todoRedis.connect()
+
+    data = {}
+    data['cloneCount'] = r.llen(RepoQueues.Cloning)
+    data['parseCount'] = r.llen(RepoQueues.Parsing)
+    data['postCount'] = r.llen(RepoQueues.Posting)
+    data['postedIssueCount'] = r.llen(RepoQueues.RepoGY)
+    data['repoCount'] = len(r.keys('repos::*')) - len(r.keys('repos::*:todo*'))
+    
+    return data
+    
         
     
         
