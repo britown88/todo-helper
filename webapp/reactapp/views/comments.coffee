@@ -1,11 +1,11 @@
-
-{a, div, h4, img} = React.DOM
+IssueReader = require '../issuereader.coffee'
 
 AddComment = require './addcomment.coffee'
 Collapsible = require './collapsible.coffee'
 Media = require './media.coffee'
 
-IssueReader = require '../issuereader.coffee'
+{a, div, h4, img} = React.DOM
+
 
 Comments = React.createClass
   getInitialState: ->

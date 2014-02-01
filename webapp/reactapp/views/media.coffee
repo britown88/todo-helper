@@ -1,7 +1,6 @@
+IssueReader = require '../issuereader.coffee'
 
 {a, div, h4, h5, img, p} = React.DOM
-
-IssueReader = require '../issuereader.coffee'
 
 
 Media = React.createClass

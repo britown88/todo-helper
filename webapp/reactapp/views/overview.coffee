@@ -1,8 +1,6 @@
-
 IssueReader = require '../issuereader.coffee'
 
 IssueItem = require './issueitem.coffee'
-
 Media = require './media.coffee'
 
 {

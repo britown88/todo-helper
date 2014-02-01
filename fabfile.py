@@ -119,7 +119,7 @@ def deploy():
     with cd('~/app/todo-helper'):
         if not files.exists('env'):
             run('virtualenv env --no-site-packages')
-            
+
         with prefix('source ./env/bin/activate'):
             pip_install_from_requirements_file()
 
@@ -128,10 +128,12 @@ def deploy():
 
 @task
 def config():
-    if env.environment != 'vagrant':
-        put('./config/%s' % env.userpass_config, '~/app/todo-helper/config/userpass.config', use_sudo=True)
-        put('./webapp/flaskapp/%s' % env.access_token, '~/app/todo-helper/webapp/flaskapp/access_token.txt', use_sudo=True)
-        put('./webapp/flaskapp/password.txt', '~/app/todo-helper/webapp/flaskapp/password.txt', use_sudo=True)
+    if env.environment != 'vagrant':    
+        put('./webapp/flaskapp/friend_password.txt', '~/app/todo-helper/webapp/flaskapp/friend_password.txt', use_sudo=True)
+        put('./webapp/flaskapp/admin_password.txt', '~/app/todo-helper/webapp/flaskapp/admin_password.txt', use_sudo=True)
+
+    put('./config/%s' % env.userpass_config, '~/app/todo-helper/config/userpass.config', use_sudo=True)
+    put('./webapp/flaskapp/%s' % env.access_token, '~/app/todo-helper/webapp/flaskapp/access_token.txt', use_sudo=True)
 
     redisConfTemplated = render_template_file('redis.conf.jinja', {
         'rdb_location': env.rdb_location,

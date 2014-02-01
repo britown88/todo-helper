@@ -41,10 +41,10 @@ def jsonp(func):
             return func(*args, **kwargs)
     return decorated_function
 
-def load_views(webapp, authdb):
+def load_views(webapp, friendAuth, adminAuth):
 
     @webapp.route('/')
-    @authdb.requires_auth
+    @friendAuth.requires_auth
     def index(jsondata=None):
         # grab stuff and render them
         dev = options['dev']
@@ -66,29 +66,42 @@ def load_views(webapp, authdb):
         print os.path.join(webapp.root_path, '..', 'build'), filename
         return send_from_directory(os.path.join(webapp.root_path, '..', 'build'), filename)
 
-    @webapp.route('/api/<path:apipath>', methods=['GET', 'POST'])
-    @authdb.requires_auth
+    @webapp.route('/api/<path:apipath>', methods=['GET'])
+    @friendAuth.requires_auth
     def api(apipath):
         githubApiUrl = 'https://api.github.com/'
 
-        print apipath
+        req = urllib2.Request(
+            "%s%s?access_token=%s" % (githubApiUrl, apipath, access_token)
+            )
+        try: 
+            response = urllib2.urlopen(req)
+            data = json.loads(response.read())
+            return jsonify(
+                data = data
+                )
+        except urllib2.URLError as e:
+            print e.reason
+            return jsonify(e)
+
+    @webapp.route('/api/<path:apipath>', methods=['POST'])
+    @adminAuth.requires_auth
+    def comment(apipath):
+        githubApiUrl = 'https://api.github.com/'
 
         req = urllib2.Request(
             "%s%s?access_token=%s" % (githubApiUrl, apipath, access_token)
             )
 
-
         if request.method == 'POST':
-            req.add_data(json.dumps(request.form.to_dict()))
-
+            req.add_data(json.dumps(request.json))
+            req.add_header('Content-Type', 'application/json')
         try: 
             response = urllib2.urlopen(req)
             data = json.loads(response.read())
-            print data
             return jsonify(
                 data = data
                 )
-
         except urllib2.URLError as e:
             print e.reason
             return jsonify(e)
@@ -96,7 +109,7 @@ def load_views(webapp, authdb):
     @webapp.route('/issues')
     @webapp.route('/issues/')
     @webapp.route('/issues/<int:page>')
-    @authdb.requires_auth
+    @friendAuth.requires_auth
     def issues(page=0):
         def gh_request(issueUrl):
             req = urllib2.Request(
@@ -123,9 +136,8 @@ def load_views(webapp, authdb):
             )
 
 
-
     @webapp.route('/redis-stats/')
-    @authdb.requires_auth
+    @friendAuth.requires_auth
     def redisStats():
         derp = getQueueStats()
         return jsonify(
