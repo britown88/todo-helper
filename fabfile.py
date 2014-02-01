@@ -117,15 +117,14 @@ def deploy():
             run('sudo chmod -R g+wx ~/app')
 
     with cd('~/app/todo-helper'):
-        run('virtualenv env --no-site-packages')
-        # with run('source ./env/bin/activate'):
+        if not files.exists('env'):
+            run('virtualenv env --no-site-packages')
+            
         with prefix('source ./env/bin/activate'):
             pip_install_from_requirements_file()
 
-
     sudo('chgrp www-data -R ~/app/')
     sudo('sudo chmod 777 ~/app/')
-
 
 @task
 def config():
