@@ -220,7 +220,7 @@ def testIssues():
             f.write("%i TODO's Found.  Displaying first %i\n" % (todoCount, displayCount))
             f.write("--------------------------\n")
             for i in range(0, displayCount):
-                todo = buildIssue(r.Todos[i])
+                todo = buildIssue(r.Todos[i], r)
                 if 'title' in todo and 'body' in todo:
                     f.write("Title: %s\n\nBody:\n%s\n\n\n" % (todo['title'], todo['body']))
     

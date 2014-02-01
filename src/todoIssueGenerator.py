@@ -9,7 +9,7 @@ from db.todoRepos import Todo
 from src.todoLogging import WarningLevels, log, callWithLogging
 
 titleTemplate = 'Unresolved TODO in {{ FilePath }} : {{ LineNumber }}'
-issueHeaderTemplate = 'File: `{{ FilePath }}`\nLine: {{ LineNumber }}\n\n```\n{{ CommentBlock }}\n```'
+issueHeaderTemplate = 'File: [{{ FilePath }}](https://github.com/{{ UserName }}/{{ RepoName }}/blob/{{ Branch }}{{ FilePath }}#L{{ LineNumber }})\nLine: {{ LineNumber }}\n\n```\n{{ CommentBlock }}\n```'
 
 # Builds a template and renders it with the passed-in data
 def renderTemplate(tempString, data):
@@ -73,7 +73,7 @@ def buildRandomEmployer():
 
 # Builds and returns the dictionary to popuate templates with
 # Takes a db.todoRepo.Todo()
-def buildTemplateData(todo):
+def buildTemplateData(todo, userName, repoName, branch):
     data = {}    
     
     blameUser = todo.blameUser.split(' ')[0]
@@ -87,6 +87,9 @@ def buildTemplateData(todo):
     data['LineNumber'] = todo.lineNumber
     data['CommentBlock'] = todo.commentBlock
     data['RandomCompany'] = buildRandomEmployer()
+    data['UserName'] = userName
+    data['RepoName'] = repoName
+    data['Branch'] = branch
     
     return data
 
@@ -150,7 +153,7 @@ def buildIssueBody(data):
 
 # Builds an issue from the passed db.todoRepos.Todo
 # returns a dictionary containing title and body ready to pass to github
-def buildIssue(todo):
+def buildIssue(todo, repo):
     # Create Issues format
     # repo.create(dict(title='My test issue', body='This needs to be fixed ASAP.'))
     
@@ -160,7 +163,7 @@ def buildIssue(todo):
     # Message (Build dict to send to templates), message consists of Complaint followed by Emphasis
     # Return {title, body}
     
-    data = buildTemplateData(todo)
+    data = buildTemplateData(todo, repo.userName, repo.repoName, repo.branch)
     ret = {}
    
 

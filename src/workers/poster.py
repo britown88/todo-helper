@@ -46,7 +46,7 @@ def runWorker(status):
                     repo.lastTodoPostDate = datetime.now().strftime("%m/%d/%Y %H:%M:%S")
                     
                     #Generate the issue
-                    data = src.todoIssueGenerator.buildIssue(todo)
+                    data = src.todoIssueGenerator.buildIssue(todo, repo)
                     
                     #post the damn issue and save the url                    
                     issue = None
