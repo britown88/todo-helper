@@ -23,7 +23,7 @@ env = Environment()
 from functools import wraps
 from flask import current_app
 
-import src.todoMelvin
+from src.todoMelvin import settings
 from src.db.todoRepos import getPostedIssues, getQueueStats
 
 def jsonp(func):
@@ -119,9 +119,10 @@ def load_views(webapp, friendAuth, adminAuth):
             respData = json.loads(response.read())
             return respData
 
-        ## we'll be getting issues from here:
+        # we'll be getting issues from here:
         # def getPostedIssues(page = 0, recent = True, pageSize = 25):
-        issues = getPostedIssues(page, True, 5)
+
+        issues = getPostedIssues(page, True, int(settings.webappPageSize))
         issueUrls = issues['todoList']
 
         jobs = [gevent.spawn(gh_request, url) for url in issueUrls]
