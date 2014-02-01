@@ -17,6 +17,9 @@ from src.todoLogging import WarningLevels, log, callWithLogging
 PROJECT_PATH = os.path.abspath(os.path.dirname(__file__))
 IGNORE_LIST = ['.git']
 
+todoQualifiers = ['todo:', 'todo(']
+todoDisqualifiers = ['generated', 'auto']
+
 ## custom comment- and todo- finder formatter
 class NullFormatter(Formatter):
 
@@ -56,7 +59,20 @@ class NullFormatter(Formatter):
                 return            
 
             if ttype.__str__() == Comment.__str__() or ttype.parent.__str__() == Comment.__str__():
-                if 'todo' in value.lower():
+                
+                todoQualified = False
+                
+                for string in todoQualifiers:
+                    if string in value.lower():
+                        todoQualified= True
+                        break
+                
+                for string in todoDisqualifiers:
+                    if string in value.lower():
+                        todoQualified= False       
+                        break 
+                
+                if todoQualified:
                     comments.append({
                         'value': value,
                         'linenumber': linenumber,

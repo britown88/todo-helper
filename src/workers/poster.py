@@ -54,7 +54,7 @@ def runWorker(status):
                     if settings.debug.lower() == 'true':
                         issue = gh.issues.create(data, 'p4r4digm', 'todo-helper') #post to our todo-helper
                     else:
-                        #issue = gh.issues.create(data, repo.userName, repo.repoName)
+                        issue = gh.issues.create(data, repo.userName, repo.repoName)
                         pass
                         
                     todo.issueURL = issue.url                        
