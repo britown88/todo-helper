@@ -15,7 +15,7 @@ IssueReader =
     $.ajax url,
       type: 'GET'
       contentType: ''
-      dataType: 'jsonp'
+      dataType: 'json'
       contentType: 'text/json'
       timeout: 20000
       xhrFields:

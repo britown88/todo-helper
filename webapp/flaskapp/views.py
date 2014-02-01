@@ -32,7 +32,6 @@ def jsonp(func):
             data = str(func(*args, **kwargs).data)
             content = str(callback) + '(' + data + ')'
             mimetype = 'application/javascript'
-            print content
             return current_app.response_class(content, mimetype=mimetype)
         else:
             return func(*args, **kwargs)
@@ -65,23 +64,32 @@ def load_views(webapp, authdb):
 
     @webapp.route('/api/<path:apipath>', methods=['GET', 'POST'])
     @authdb.requires_auth
-    @jsonp
     def api(apipath):
         githubApiUrl = 'https://api.github.com/'
+
+        print apipath
 
         req = urllib2.Request(
             "%s%s?access_token=%s" % (githubApiUrl, apipath, access_token)
             )
 
+        print req
+
         if request.method == 'POST':
             req.add_data(json.dumps(request.form.to_dict()))
 
-        response = urllib2.urlopen(req)
-        data = json.loads(response.read())
+        print jsonify(req)
 
-        return jsonify(
-            data = data
-            )
+        try: 
+            response = urllib2.urlopen(req)
+            data = json.loads(response.read())
+            return jsonify(
+                data = data
+                )
+
+        except urllib2.URLError as e:
+            print e.reason
+            return jsonify(e)
 
     return webapp
 

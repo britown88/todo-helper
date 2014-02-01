@@ -29,7 +29,7 @@ Overview = React.createClass
   getIssues: ->
     $.ajax "#{IssueReader.githubApiUrl}repos/p4r4digm/todo-helper/issues",
       type: 'get'
-      dataType: 'jsonp'
+      dataType: 'json'
       contentType: 'text/json'
       error: (xhr, status, errorThrown) =>
         IssueReader.addAlert
@@ -51,7 +51,7 @@ Overview = React.createClass
   getMeta: ->
     $.ajax "#{IssueReader.githubApiUrl}rate_limit",
       type: 'get'
-      dataType: 'jsonp'
+      dataType: 'json'
       contentType: 'text/json'
       error: (xhr, status, errorThrown) =>
         IssueReader.addAlert
