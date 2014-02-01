@@ -1,3 +1,7 @@
+IssueReader = require '../issuereader.coffee'
+
+Collapsible = require './collapsible.coffee'
+Media = require './media.coffee'
 
 {
   a, 
@@ -9,10 +13,6 @@
   textarea
 } = React.DOM
 
-Collapsible = require './collapsible.coffee'
-Media = require './media.coffee'
-
-IssueReader = require '../issuereader.coffee'
 
 AddComment = React.createClass
   getInitialState: ->
@@ -28,8 +28,8 @@ AddComment = React.createClass
     $.ajax proxyCommentsUrl,
       type: 'post'
       dataType: 'json'
-      contentType: 'text/json'
-      data: {
+      contentType: 'application/json'
+      data: JSON.stringify {
         body: @state.text
       }
       error: (xhr, status, errorThrown) =>

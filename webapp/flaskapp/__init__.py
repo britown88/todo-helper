@@ -23,11 +23,17 @@ access_token = open(os.path.join(
 from flaskapp.views import load_views
 from flaskapp.auth import FlaskRealmDigestDB
 
-password = open(os.path.join(
-    basedir, 'password.txt'), 'r').read().strip()
+friend_password = open(os.path.join(
+    basedir, 'friend_password.txt'), 'r').read().strip()
 
-authDB = FlaskRealmDigestDB('MyAuthRealm')
-authDB.add_user('admin', password)
+admin_password = open(os.path.join(
+    basedir, 'admin_password.txt'), 'r').read().strip()
+
+friendAuth = FlaskRealmDigestDB('friendAuth')
+friendAuth.add_user('friend', friend_password)
+
+adminAuth = FlaskRealmDigestDB('adminAuth')
+adminAuth.add_user('admin', admin_password)
 
 
-app = load_views(app, authDB) 
+app = load_views(app, friendAuth, adminAuth) 

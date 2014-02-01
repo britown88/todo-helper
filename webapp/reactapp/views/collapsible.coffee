@@ -1,7 +1,6 @@
+IssueReader = require '../issuereader.coffee'
 
 {a, div, h5} = React.DOM
-
-IssueReader = require '../issuereader.coffee'
 
 
 Collapsible = React.createClass
