@@ -27,7 +27,7 @@ AddComment = React.createClass
     proxyCommentsUrl = @props.item.comments_url.replace 'https://api.github.com/', IssueReader.githubApiUrl
     $.ajax proxyCommentsUrl,
       type: 'post'
-      dataType: 'jsonp'
+      dataType: 'json'
       contentType: 'text/json'
       data: {
         body: @state.text
@@ -61,6 +61,7 @@ AddComment = React.createClass
     (Collapsible {
       header: 'Add Comment'
       unique: "addcomment_#{@props.item.id}"
+      collapsed: true
       }, (div {}, 
         form {onSubmit: @handleSubmit}, [
           textarea {

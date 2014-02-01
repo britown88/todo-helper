@@ -19,7 +19,7 @@ Comments = React.createClass
     proxyCommentsUrl = @props.item.comments_url.replace 'https://api.github.com/', IssueReader.githubApiUrl
     $.ajax proxyCommentsUrl,
       type: 'get'
-      dataType: 'jsonp'
+      dataType: 'json'
       contentType: 'text/json'
       error: (xhr, status, errorThrown) =>
         IssueReader.addAlert
@@ -50,6 +50,7 @@ Comments = React.createClass
       if @state.commentsData.length > 0 then (Collapsible {
         header: 'Comments'
         unique: "comments_#{@props.item.id}"
+        collapsed: false
         }, [
         @state.commentsData.map(@createItem)
       ]) else '',

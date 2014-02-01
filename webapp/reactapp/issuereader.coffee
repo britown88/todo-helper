@@ -10,12 +10,11 @@ IssueReader =
     moment()
 
   hitUtopias: (urlPath, data, options) ->
-    url = 
-    IssueReader.buildUri urlPath, data
+    url = IssueReader.buildUri urlPath, data
     $.ajax url,
       type: 'GET'
       contentType: ''
-      dataType: 'jsonp'
+      dataType: 'json'
       contentType: 'text/json'
       timeout: 20000
       xhrFields:

@@ -35,10 +35,6 @@ def melvintest(app='all'):
 def melvinlive(app='all'):
     env.update(APP_ENV['melvinlive'])
 
-@task
-def prod():
-    pass
-
 ##########################################
 # Build tasks
 # Build installs system dependencies for the projects.
@@ -108,8 +104,8 @@ def deploy():
 
         if files.exists('~/app/todo-helper'):
             with cd('~/app/todo-helper'):
-                run('git checkout master')
-                run('git pull origin master')
+                run('git fetch --all')
+                run('git reset --hard origin/master')
         else:
 
             sudo('sudo rm -rf ~/app/todo-helper')
@@ -134,8 +130,8 @@ def deploy():
 @task
 def config():
     if env.environment != 'vagrant':
-        put('./config/userpass.config', '~/app/todo-helper/config/userpass.config', use_sudo=True)
-        put('./webapp/flaskapp/access_token.txt', '~/app/todo-helper/webapp/flaskapp/access_token.txt', use_sudo=True)
+        put('./config/%s' % env.userpass_config, '~/app/todo-helper/config/userpass.config', use_sudo=True)
+        put('./webapp/flaskapp/%s' % env.access_token, '~/app/todo-helper/webapp/flaskapp/access_token.txt', use_sudo=True)
         put('./webapp/flaskapp/password.txt', '~/app/todo-helper/webapp/flaskapp/password.txt', use_sudo=True)
 
     redisConfTemplated = render_template_file('redis.conf.jinja', {
@@ -150,6 +146,7 @@ def config():
 
     confTmpl = render_template_file('todowebapp_nginx.conf', {
         'user': env.user,
+        'server_name': env.server_name,
         })
     put(confTmpl, '/etc/nginx/sites-available/todowebapp', use_sudo=True)
 

@@ -1,15 +1,18 @@
 {
   "vagrant": {
-    "server_name": "http://localhost",
+    "server_name": "todohelper.localhost",
     "environment": "vagrant",
     "rdb_workingdir": "./",
     "rdb_location": "backup.rdb",
     "user": "vagrant",
     "hosts": ["127.0.0.1:2275"],
     "disable_known_hosts": true,
-    "live": false
+    "live": false,
+    "access_token": "test_access_token.txt",
+    "userpass_config": "test_userpass.config"
   },
   "melvintest": {
+    "server_name": "ec2-23-22-5-73.compute-1.amazonaws.com",
     "environment": "melvintest",
     "rdb_workingdir": "/dev/sdf/",
     "rdb_location": "backup.rdb",
@@ -17,17 +20,22 @@
     "hosts": ["23.22.5.73"],
     "key_filename": "~/.amazonkeys/melvin_todo_helper.pem",
     "disable_known_hosts": true,
-    "live": false
+    "live": false,
+    "access_token": "test_access_token.txt",
+    "userpass_config": "test_userpass.config"
   },  
   "melvinlive": {
+    "server_name": "ec2-54-242-71-243.compute-1.amazonaws.com",
     "environment": "melvinlive",
     "rdb_workingdir": "/dev/sdf/",
     "rdb_location": "backup.rdb",
     "user": "ubuntu",
-    "hosts": [],
+    "hosts": ["54.242.71.243"],
     "key_filename": "~/.amazonkeys/melvin_todo_helper.pem",
     "disable_known_hosts": true,
-    "live": true
+    "live": true,
+    "access_token": "live_access_token.txt",
+    "userpass_config": "live_userpass.config"
   }
 
 }

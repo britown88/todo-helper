@@ -6,6 +6,7 @@ IssueItem = require './issueitem.coffee'
 Media = require './media.coffee'
 
 {
+  button,
   div, 
   h4, 
   hr,
@@ -18,18 +19,22 @@ Media = require './media.coffee'
 Overview = React.createClass
   getInitialState: ->
     # hit ajax stuff
-    @getIssues()
+    @getIssues(0)
     @getMeta()
+    @getQueue()
     return {
-      issueUrl: 'https://api.github.com/repos/p4r4digm/todo-helper/issues'
+      issueUrl: '/issues'
       issuesData: []
       issuesMeta: {}
+      queue: {}
+      nextPage: 0
+      loading: true
     }
 
-  getIssues: ->
-    $.ajax "#{IssueReader.githubApiUrl}repos/p4r4digm/todo-helper/issues",
+  getIssues: (pageNumber)->
+    $.ajax "/issues/#{pageNumber}",
       type: 'get'
-      dataType: 'jsonp'
+      dataType: 'json'
       contentType: 'text/json'
       error: (xhr, status, errorThrown) =>
         IssueReader.addAlert
@@ -44,14 +49,43 @@ Overview = React.createClass
           item.body = @safeBrackets item.body
           item.title = @safeBrackets item.title
 
+          newIssues = @state.issuesData.concat if _.has(data.data, 'length') then data.data else []
+
         @setState {
-          issuesData: if _.has(data.data, 'length') then data.data[0..9] else []
+          issuesData: newIssues
+          nextPage: @state.nextPage + 1
+          loading: false
         }
+
+  getMoar: ->
+    @setState {
+      loading: true
+    }
+    @getIssues @state.nextPage
 
   getMeta: ->
     $.ajax "#{IssueReader.githubApiUrl}rate_limit",
       type: 'get'
-      dataType: 'jsonp'
+      dataType: 'json'
+      contentType: 'text/json'
+      error: (xhr, status, errorThrown) =>
+        IssueReader.addAlert
+          context: 'error'
+          message: """
+            AJAX Error: #{status}<br/>
+            AJAX error thrown: #{errorThrown}<br />
+            AJAX XHR: #{xhr}<br />
+            """
+      success: (data, status, xhr) =>
+        console.log data
+        @setState {
+          issuesMeta: data.data
+        }
+
+  getQueue: ->
+    $.ajax "/redis-stats",
+      type: 'get'
+      dataType: 'json'
       contentType: 'text/json'
       error: (xhr, status, errorThrown) =>
         IssueReader.addAlert
@@ -63,9 +97,8 @@ Overview = React.createClass
             """
       success: (data, status, xhr) =>
         @setState {
-          issuesMeta: data.data
+          queue: data.data
         }
-
   safeBrackets: (string) ->
     string = string.replace('<', '&lt;')
     string = string.replace('>', '&gt;')
@@ -86,11 +119,23 @@ Overview = React.createClass
           (p {}, "Remaining: #{@state.issuesMeta.rate.remaining}"),
           (p {}, "RateLimit reset: #{moment(@state.issuesMeta.rate.reset, 'X').format('MMMM Do YYYY, h:mm:ss a')}")
         ]) else '',
+        if @state.queue then (div {className: 'meta-container pull-right'}, [
+          (p {}, "Issues posted: #{@state.queue.postedIssueCount}"),
+          (p {}, "cloneCount: #{@state.queue.cloneCount}"),
+          (p {}, "parseCount: #{@state.queue.parseCount}"),
+          (p {}, "repoCount: #{@state.queue.repoCount}"),
+          (p {}, "postCount: #{@state.queue.postCount}"),
+        ]) else '',
       ),
       (hr {className: 'clear'}),
       div {}, [
         @state.issuesData.map(@createItem)
-      ]
+      ],
+      button {
+        className: "btn #{if @state.loading then 'btn-disabled' else 'btn-info'}",
+        disabled: @state.loading,
+        onClick: @getMoar,
+        }, "MOAR (or, 5 more.)"
     ])
 
 

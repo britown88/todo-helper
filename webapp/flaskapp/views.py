@@ -12,6 +12,7 @@ from flask import ( Flask,
                     send_from_directory,
                     url_for)
 from flask.ext.sqlalchemy import SQLAlchemy
+import gevent
 from jinja2 import Environment
 
 from flaskapp import app, options, basedir, access_token
@@ -21,6 +22,9 @@ env = Environment()
 
 from functools import wraps
 from flask import current_app
+
+import src.todoMelvin
+from src.db.todoRepos import getPostedIssues, getQueueStats
 
 def jsonp(func):
     """Wraps JSONified output for JSONP requests."""
@@ -32,7 +36,6 @@ def jsonp(func):
             data = str(func(*args, **kwargs).data)
             content = str(callback) + '(' + data + ')'
             mimetype = 'application/javascript'
-            print content
             return current_app.response_class(content, mimetype=mimetype)
         else:
             return func(*args, **kwargs)
@@ -65,23 +68,71 @@ def load_views(webapp, authdb):
 
     @webapp.route('/api/<path:apipath>', methods=['GET', 'POST'])
     @authdb.requires_auth
-    @jsonp
     def api(apipath):
         githubApiUrl = 'https://api.github.com/'
+
+        print apipath
 
         req = urllib2.Request(
             "%s%s?access_token=%s" % (githubApiUrl, apipath, access_token)
             )
 
+
         if request.method == 'POST':
             req.add_data(json.dumps(request.form.to_dict()))
 
-        response = urllib2.urlopen(req)
-        data = json.loads(response.read())
+        try: 
+            response = urllib2.urlopen(req)
+            data = json.loads(response.read())
+            print data
+            return jsonify(
+                data = data
+                )
+
+        except urllib2.URLError as e:
+            print e.reason
+            return jsonify(e)
+
+    @webapp.route('/issues')
+    @webapp.route('/issues/')
+    @webapp.route('/issues/<int:page>')
+    @authdb.requires_auth
+    def issues(page=0):
+        def gh_request(issueUrl):
+            req = urllib2.Request(
+                "%s?access_token=%s" % (issueUrl, access_token)
+                )
+            response = urllib2.urlopen(req)
+            respData = json.loads(response.read())
+            return respData
+
+        ## we'll be getting issues from here:
+        # def getPostedIssues(page = 0, recent = True, pageSize = 25):
+        issues = getPostedIssues(page, True, 5)
+        issueUrls = issues['todoList']
+
+        jobs = [gevent.spawn(gh_request, url) for url in issueUrls]
+        gevent.joinall(jobs, timeout=8)
+        
+        data = [job.value for job in jobs]
 
         return jsonify(
-            data = data
+            data = data,
+            pageNumber = issues['pageNumber'],
+            pageCount = issues['pageCount'],
             )
 
+
+
+    @webapp.route('/redis-stats/')
+    @authdb.requires_auth
+    def redisStats():
+        derp = getQueueStats()
+        return jsonify(
+            data = derp
+            )
+
+
     return webapp
+
 
